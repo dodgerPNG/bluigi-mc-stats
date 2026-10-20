@@ -396,43 +396,44 @@ function ago(ts) {
 // Color themes, cycled by the palette button (bottom-right): Default, light themes, then dark ones. Saved per browser.
 const DARK_MC = {"--mc-yellow": "#ffff55", "--mc-green": "#55ff55", "--mc-purple": "#ff55ff"};
 const LIGHT_MC = {"--mc-yellow": "#9c7f00", "--mc-green": "#1c8c1c", "--mc-purple": "#a32ca3"};
+const STATUS = {"--good": "#34b878", "--warn": "#e5a01e", "--bad": "#e5484d", "--sleep": "#6f8cff"};
 const THEMES = [
   {name: "Default", vars: {"--bg": "#110d17", "--surface": "#1b1623", "--surface-2": "#241d2f", "--border": "#322a40", "--grid": "#2a2335",
     "--text": "#f3eff8", "--text-2": "#bdb3cc", "--muted": "#8b8199", "--accent": "#ffb0e7", "--accent-text": "#ffb0e7",
-    "--good": "#4cc38a", "--warn": "#f0b429", "--bad": "#f2676b", "--sleep": "#8fa8ff", "--cave-bg": "#2a1418", ...DARK_MC}},
+    "--cave-bg": "#2a1418", ...DARK_MC}},
   {name: "Light", light: true, vars: {"--bg": "#f3f0f7", "--surface": "#ffffff", "--surface-2": "#f1ecf6", "--border": "#dcd3e6", "--grid": "#e9e3f0",
     "--text": "#1d1724", "--text-2": "#4f4560", "--muted": "#7d7290", "--accent": "#e15aa9", "--accent-text": "#c4398c",
-    "--good": "#1f9d63", "--warn": "#b7791f", "--bad": "#d93b45", "--sleep": "#4d6bd8", "--cave-bg": "#fde6e8", ...LIGHT_MC}},
+    "--cave-bg": "#fde6e8", ...LIGHT_MC}},
   {name: "Cotton Candy", light: true, vars: {"--bg": "#fbf0f6", "--surface": "#ffffff", "--surface-2": "#f4eefc", "--border": "#e8d5ee", "--grid": "#f0e6f6",
     "--text": "#3b2b5a", "--text-2": "#665789", "--muted": "#9284ab", "--accent": "#b298e7", "--accent-text": "#8b67d8",
-    "--good": "#3faab0", "--warn": "#d0913a", "--bad": "#e0609a", "--sleep": "#7fc9cb", "--cave-bg": "#fde1ee", ...LIGHT_MC}},
+    "--cave-bg": "#fde1ee", ...LIGHT_MC}},
   {name: "Watermelon", light: true, vars: {"--bg": "#adebb3", "--surface": "#e6f9e8", "--surface-2": "#d2f3d5", "--border": "#86d68e", "--grid": "#c2eec7",
     "--text": "#2b2b2b", "--text-2": "#4a4a4a", "--muted": "#5f7a62", "--accent": "#fc6c85", "--accent-text": "#e0405e",
     "--chart-a": "#fc6c85", "--chart-b": "#4a4a4a", "--chart-c": "#fc6c85", "--chart-d": "#fc6c85", "--bar": "#fc6c85", "--meter": "#4a4a4a",
-    "--good": "#3a9e14", "--warn": "#c98a00", "--bad": "#e0405e", "--sleep": "#4a4a4a", "--cave-bg": "#ffd9df", ...LIGHT_MC}},
+    "--cave-bg": "#ffd9df", ...LIGHT_MC}},
   {name: "Cool Blues", light: true, vars: {"--bg": "#e4f8ff", "--surface": "#ffffff", "--surface-2": "#e9fbff", "--border": "#b4e6f7", "--grid": "#d3f1fb",
     "--text": "#06304a", "--text-2": "#2c5a76", "--muted": "#5f88a0", "--accent": "#00aeff", "--accent-text": "#0083c7",
     "--chart-a": "#00aeff", "--chart-b": "#00de94", "--chart-c": "#00aeff", "--chart-d": "#00de94", "--bar": "#00c8ff", "--meter": "#00de94",
-    "--good": "#00b84a", "--warn": "#d18a00", "--bad": "#e0435c", "--sleep": "#00aeff", "--cave-bg": "#fde3ea", ...LIGHT_MC}},
+    "--cave-bg": "#fde3ea", ...LIGHT_MC}},
   {name: "Breakfast Tea", light: true, vars: {"--bg": "#fdf0e3", "--surface": "#fffaf4", "--surface-2": "#ffe9d6", "--border": "#e3d2c2", "--grid": "#f1e3d6",
     "--text": "#331c08", "--text-2": "#664c36", "--muted": "#8f7a68", "--accent": "#ffd3ac", "--accent-text": "#664c36",
     "--chart-a": "#664c36", "--chart-b": "#664c36", "--chart-c": "#ccbeb1", "--chart-d": "#ccbeb1", "--bar": "#664c36", "--meter": "#664c36",
-    "--good": "#6d8f4a", "--warn": "#c27a2c", "--bad": "#b5482e", "--sleep": "#8a7360", "--cave-bg": "#f8dccf", ...LIGHT_MC}},
+    "--cave-bg": "#f8dccf", ...LIGHT_MC}},
   {name: "Honeycomb", light: true, vars: {"--bg": "#fdf5cc", "--surface": "#fffdd0", "--surface-2": "#f9ecb0", "--border": "#ead27c", "--grid": "#f3e3a0",
     "--text": "#3b230f", "--text-2": "#6e4a25", "--muted": "#97764a", "--accent": "#ffc107", "--accent-text": "#895129",
-    "--good": "#5f9a2b", "--warn": "#d18a00", "--bad": "#c8442c", "--sleep": "#895129", "--cave-bg": "#fbdcc8", ...LIGHT_MC}},
+    "--cave-bg": "#fbdcc8", ...LIGHT_MC}},
   {name: "Electropop", vars: {"--bg": "#080a12", "--surface": "#10141f", "--surface-2": "#171d2d", "--border": "#243049", "--grid": "#1c2436",
     "--text": "#effcff", "--text-2": "#a9c6d3", "--muted": "#6f8999", "--accent": "#00f0ff", "--accent-text": "#00f0ff",
     "--chart-a": "#00ff81", "--chart-b": "#ffa900", "--chart-c": "#ff6800", "--chart-d": "#ffa900", "--bar": "#00ff81", "--meter": "#ff6800",
-    "--good": "#00ff81", "--warn": "#ffa900", "--bad": "#ff6800", "--sleep": "#7aa8ff", "--cave-bg": "#2b1606", ...DARK_MC}},
+    "--cave-bg": "#2b1606", ...DARK_MC}},
   {name: "Campfire", vars: {"--bg": "#190508", "--surface": "#2a0a11", "--surface-2": "#3c0f19", "--border": "#61182a", "--grid": "#46121f",
     "--text": "#fff4e2", "--text-2": "#f1caa6", "--muted": "#b48a7c", "--accent": "#ffce1b", "--accent-text": "#ffce1b",
     "--chart-a": "#ffce1b", "--chart-b": "#be5103", "--chart-c": "#be5103", "--chart-d": "#a52a2a", "--bar": "#ffce1b", "--meter": "#be5103",
-    "--good": "#b8c44c", "--warn": "#ffce1b", "--bad": "#e5503c", "--sleep": "#f0a86a", "--cave-bg": "#800020", ...DARK_MC}},
+    "--cave-bg": "#800020", ...DARK_MC}},
   {name: "Midnight", vars: {"--bg": "#0d0d24", "--surface": "#16163a", "--surface-2": "#20204d", "--border": "#34346e", "--grid": "#262659",
     "--text": "#ececff", "--text-2": "#cccfff", "--muted": "#8a8abf", "--accent": "#a3a3cc", "--accent-text": "#ccccff",
     "--chart-a": "#ccccff", "--chart-b": "#a3a3cc", "--chart-c": "#a3a3cc", "--chart-d": "#7a7abf", "--bar": "#a3a3cc", "--meter": "#ccccff",
-    "--good": "#7fd6a0", "--warn": "#f0c674", "--bad": "#f07b8c", "--sleep": "#ccccff", "--cave-bg": "#3a1030", ...DARK_MC}},
+    "--cave-bg": "#3a1030", ...DARK_MC}},
 ];
 let themeIdx = 0;
 try { themeIdx = Math.max(0, THEMES.findIndex(t => t.name === localStorage.getItem("theme"))); } catch (e) {}
@@ -442,6 +443,8 @@ function applyTheme() {
   const r = document.documentElement;
   for (const [k, v] of Object.entries(THEME.vars)) r.style.setProperty(k, v);
   r.style.setProperty("--accent-dim", THEME.vars["--accent"] + "33");
+  // status colors (online, starting, offline, paused) are the same in every theme
+  for (const [k, v] of Object.entries(STATUS)) r.style.setProperty(k, v);
   for (const k of ["--chart-a", "--chart-b", "--chart-c", "--chart-d", "--bar", "--meter"])   // per-part colors, accent unless the theme says
     r.style.setProperty(k, THEME.vars[k] || THEME.vars["--accent"]);
   if (THEME.light) r.setAttribute("data-light", ""); else r.removeAttribute("data-light");

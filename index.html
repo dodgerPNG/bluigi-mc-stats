@@ -393,7 +393,7 @@ function ago(ts) {
   const d = Math.round(s / 86400);
   return d === 1 ? "yesterday" : `${d} days ago`;
 }
-// Color themes, cycled by the palette button (bottom-right). Saved per browser.
+// Color themes, cycled by the palette button (bottom-right): Default, light themes, then dark ones. Saved per browser.
 const DARK_MC = {"--mc-yellow": "#ffff55", "--mc-green": "#55ff55", "--mc-purple": "#ff55ff"};
 const LIGHT_MC = {"--mc-yellow": "#9c7f00", "--mc-green": "#1c8c1c", "--mc-purple": "#a32ca3"};
 const THEMES = [
@@ -410,10 +410,6 @@ const THEMES = [
     "--text": "#2b2b2b", "--text-2": "#4a4a4a", "--muted": "#5f7a62", "--accent": "#fc6c85", "--accent-text": "#e0405e",
     "--chart-a": "#fc6c85", "--chart-b": "#4a4a4a", "--chart-c": "#fc6c85", "--chart-d": "#fc6c85", "--bar": "#fc6c85", "--meter": "#4a4a4a",
     "--good": "#3a9e14", "--warn": "#c98a00", "--bad": "#e0405e", "--sleep": "#4a4a4a", "--cave-bg": "#ffd9df", ...LIGHT_MC}},
-  {name: "Electropop", vars: {"--bg": "#080a12", "--surface": "#10141f", "--surface-2": "#171d2d", "--border": "#243049", "--grid": "#1c2436",
-    "--text": "#effcff", "--text-2": "#a9c6d3", "--muted": "#6f8999", "--accent": "#00f0ff", "--accent-text": "#00f0ff",
-    "--chart-a": "#00ff81", "--chart-b": "#ffa900", "--chart-c": "#ff6800", "--chart-d": "#ffa900", "--bar": "#00ff81", "--meter": "#ff6800",
-    "--good": "#00ff81", "--warn": "#ffa900", "--bad": "#ff6800", "--sleep": "#7aa8ff", "--cave-bg": "#2b1606", ...DARK_MC}},
   {name: "Cool Blues", light: true, vars: {"--bg": "#e4f8ff", "--surface": "#ffffff", "--surface-2": "#e9fbff", "--border": "#b4e6f7", "--grid": "#d3f1fb",
     "--text": "#06304a", "--text-2": "#2c5a76", "--muted": "#5f88a0", "--accent": "#00aeff", "--accent-text": "#0083c7",
     "--chart-a": "#00aeff", "--chart-b": "#00de94", "--chart-c": "#00aeff", "--chart-d": "#00de94", "--bar": "#00c8ff", "--meter": "#00de94",
@@ -425,10 +421,18 @@ const THEMES = [
   {name: "Honeycomb", light: true, vars: {"--bg": "#fdf5cc", "--surface": "#fffdd0", "--surface-2": "#f9ecb0", "--border": "#ead27c", "--grid": "#f3e3a0",
     "--text": "#3b230f", "--text-2": "#6e4a25", "--muted": "#97764a", "--accent": "#ffc107", "--accent-text": "#895129",
     "--good": "#5f9a2b", "--warn": "#d18a00", "--bad": "#c8442c", "--sleep": "#895129", "--cave-bg": "#fbdcc8", ...LIGHT_MC}},
+  {name: "Electropop", vars: {"--bg": "#080a12", "--surface": "#10141f", "--surface-2": "#171d2d", "--border": "#243049", "--grid": "#1c2436",
+    "--text": "#effcff", "--text-2": "#a9c6d3", "--muted": "#6f8999", "--accent": "#00f0ff", "--accent-text": "#00f0ff",
+    "--chart-a": "#00ff81", "--chart-b": "#ffa900", "--chart-c": "#ff6800", "--chart-d": "#ffa900", "--bar": "#00ff81", "--meter": "#ff6800",
+    "--good": "#00ff81", "--warn": "#ffa900", "--bad": "#ff6800", "--sleep": "#7aa8ff", "--cave-bg": "#2b1606", ...DARK_MC}},
   {name: "Campfire", vars: {"--bg": "#190508", "--surface": "#2a0a11", "--surface-2": "#3c0f19", "--border": "#61182a", "--grid": "#46121f",
     "--text": "#fff4e2", "--text-2": "#f1caa6", "--muted": "#b48a7c", "--accent": "#ffce1b", "--accent-text": "#ffce1b",
     "--chart-a": "#ffce1b", "--chart-b": "#be5103", "--chart-c": "#be5103", "--chart-d": "#a52a2a", "--bar": "#ffce1b", "--meter": "#be5103",
     "--good": "#b8c44c", "--warn": "#ffce1b", "--bad": "#e5503c", "--sleep": "#f0a86a", "--cave-bg": "#800020", ...DARK_MC}},
+  {name: "Midnight", vars: {"--bg": "#0d0d24", "--surface": "#16163a", "--surface-2": "#20204d", "--border": "#34346e", "--grid": "#262659",
+    "--text": "#ececff", "--text-2": "#cccfff", "--muted": "#8a8abf", "--accent": "#a3a3cc", "--accent-text": "#ccccff",
+    "--chart-a": "#ccccff", "--chart-b": "#a3a3cc", "--chart-c": "#a3a3cc", "--chart-d": "#7a7abf", "--bar": "#a3a3cc", "--meter": "#ccccff",
+    "--good": "#7fd6a0", "--warn": "#f0c674", "--bad": "#f07b8c", "--sleep": "#ccccff", "--cave-bg": "#3a1030", ...DARK_MC}},
 ];
 let themeIdx = 0;
 try { themeIdx = Math.max(0, THEMES.findIndex(t => t.name === localStorage.getItem("theme"))); } catch (e) {}

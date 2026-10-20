@@ -22,6 +22,9 @@
   --bad: #f2676b;
   --sleep: #8fa8ff;
   --grid: #2a2335;
+  --accent-text: #ffb0e7;    /* accent used for text (bold words in facts, titles) */
+  --cave-bg: #2a1418;        /* start of the red Cave Dweller gradient */
+  --mc-yellow: #ffff55; --mc-green: #55ff55; --mc-purple: #ff55ff;   /* chat event colors, as in game */
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
@@ -41,20 +44,20 @@ h2 { font-size: 1.05rem; margin: 0 0 .7vh; color: var(--text-2); font-weight: 50
 /* header */
 header { display: flex; align-items: center; gap: 1.5vw; }
 header h1 { font-size: 2.3rem; margin: 0; line-height: 1; }
-header h1 span { color: var(--accent); }
+header h1 span { color: var(--accent-text); }
 .brand { display: flex; align-items: center; gap: .9vw; }
 .srv-icon { width: 3.7rem; height: 3.7rem; border-radius: 8px; image-rendering: pixelated; flex: none; }
 .motd { color: var(--text-2); font-size: 1rem; margin-top: .4vh; }
 .pill { display: inline-flex; align-items: center; gap: .5em; padding: .45em 1em; border-radius: 999px; font-weight: 600; font-size: 1.1rem; border: 1px solid; }
 .pill .dot { width: .7em; height: .7em; border-radius: 50%; background: currentColor; }
-.pill.online { color: var(--good); border-color: #4cc38a66; background: #4cc38a14; }
+.pill.online { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); background: color-mix(in srgb, var(--good) 8%, transparent); }
 .pill.online .dot { animation: pulse 2s infinite; }
-.pill.sleeping { color: var(--sleep); border-color: #8fa8ff66; background: #8fa8ff14; }
-.pill.starting { color: var(--warn); border-color: #f0b42966; background: #f0b42914; }
-.pill.offline { color: var(--bad); border-color: #f2676b66; background: #f2676b14; }
+.pill.sleeping { color: var(--sleep); border-color: color-mix(in srgb, var(--sleep) 40%, transparent); background: color-mix(in srgb, var(--sleep) 8%, transparent); }
+.pill.starting { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--warn) 8%, transparent); }
+.pill.offline { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); background: color-mix(in srgb, var(--bad) 8%, transparent); }
 @keyframes pulse { 50% { opacity: .35; } }
 .spacer { flex: 1; }
-.score { border: 1px solid #f2676b88; background: linear-gradient(135deg, #2a1418, var(--surface) 80%); border-radius: 14px;
+.score { border: 1px solid color-mix(in srgb, var(--bad) 55%, transparent); background: linear-gradient(135deg, var(--cave-bg), var(--surface) 80%); border-radius: 14px;
   padding: .5vh 1vw; display: grid; grid-template-columns: auto auto auto; gap: 0 1vw; align-items: center; }
 .score .ttl { grid-column: 1 / -1; font-family: "Pixelify Sans", Inter, sans-serif; color: var(--bad); font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; }
 .score .side { text-align: center; }
@@ -127,7 +130,7 @@ svg .val { fill: var(--text); font-weight: 600; }
 
 /* leaderboard */
 .board-title { display: flex; justify-content: space-between; align-items: baseline; }
-.board-title .pixel { font-size: 1.5rem; color: var(--accent); }
+.board-title .pixel { font-size: 1.5rem; color: var(--accent-text); }
 .dots { display: flex; gap: 5px; }
 .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
 .dots i.on { background: var(--accent); }
@@ -145,11 +148,11 @@ svg .val { fill: var(--text); font-weight: 600; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px); } }
 
 .fact { font-size: 1.25rem; line-height: 1.45; min-height: 3.6em; }
-.fact b { color: var(--accent); }
+.fact b { color: var(--accent-text); }
 .factcard { transition: border-color .6s, background .6s; }
-.factcard.cave { border-color: #f2676b88; background: linear-gradient(135deg, #2a1418, var(--surface) 70%); }
+.factcard.cave { border-color: color-mix(in srgb, var(--bad) 55%, transparent); background: linear-gradient(135deg, var(--cave-bg), var(--surface) 70%); }
 .factcard.cave h2 { color: var(--bad); }
-.factcard.cave .fact b { color: #ff9a9d; }
+.factcard.cave .fact b { color: color-mix(in srgb, var(--bad) 65%, var(--text)); }
 
 /* arrows */
 .nav { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); width: 2em; height: 2em; border-radius: 8px;
@@ -166,12 +169,12 @@ svg .val { fill: var(--text); font-weight: 600; }
 .msg .nohead { width: 22px; }
 .msg .t { color: var(--muted); font-size: .78rem; font-variant-numeric: tabular-nums; padding-top: .2em; white-space: nowrap; cursor: help; }
 .msg .txt { overflow-wrap: anywhere; }
-.msg.k-joined .txt, .msg.k-left .txt { color: #ffff55; }
+.msg.k-joined .txt, .msg.k-left .txt { color: var(--mc-yellow); }
 .msg.k-start .txt, .msg.k-stop .txt { color: var(--muted); font-style: italic; }
 .msg.k-cave .txt { color: var(--bad); }
 .msg.k-emote .txt { font-style: italic; }
-.adv { color: #55ff55; }
-.adv.challenge { color: #ff55ff; }
+.adv { color: var(--mc-green); }
+.adv.challenge { color: var(--mc-purple); }
 .nm { font-weight: 600; }
 [data-desc] { cursor: help; }
 /* Minecraft-style tooltip */
@@ -181,14 +184,14 @@ svg .val { fill: var(--text); font-weight: 600; }
 #tip .tt { color: #55ff55; }
 #tip .td { color: #55ff55; }
 #tip.challenge .tt, #tip.challenge .td { color: #ff55ff; }
-.nm.chip { background: #e9e4f0; padding: 0 .3em; border-radius: 4px; }
+.nm.chip { background: var(--chip, #e9e4f0); padding: 0 .3em; border-radius: 4px; }
 .msg.new { animation: fade .6s; }
 
 /* cycling card */
 .cycle-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1vw; }
 .cycle-head h2 { cursor: pointer; flex: 1; }
 #fact-title { cursor: pointer; user-select: none; }
-.cave-alert { display: none; color: var(--bad); border: 1px solid #f2676b88; background: #f2676b1a; padding: .45em 1em; border-radius: 999px; font-weight: 600; animation: pulse 1.6s infinite; }
+.cave-alert { display: none; color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 55%, transparent); background: color-mix(in srgb, var(--bad) 10%, transparent); padding: .45em 1em; border-radius: 999px; font-weight: 600; animation: pulse 1.6s infinite; }
 
 .feed { display: grid; gap: .55vh; font-size: .92rem; overflow: hidden; }
 .ev { display: grid; grid-template-columns: 4.6em 1.4em 1fr; gap: .4vw; align-items: baseline; }
@@ -199,7 +202,18 @@ svg .val { fill: var(--text); font-weight: 600; }
 
 footer { display: flex; gap: 2.2vw; color: var(--muted); font-size: .88rem; flex-wrap: wrap; }
 footer b { color: var(--text-2); font-weight: 500; }
-.stale { position: fixed; bottom: 1vh; right: 1vw; background: var(--bad); color: #fff; padding: .4em .9em; border-radius: 8px; display: none; }
+.theme-btn { position: fixed; bottom: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface); color: var(--muted); display: grid; place-items: center; cursor: pointer; opacity: .55; padding: 0;
+  transition: opacity .2s, color .2s; z-index: 5; }
+.theme-btn:hover { opacity: 1; color: var(--accent-text); }
+.theme-btn .fa { width: 14px; height: 14px; }
+.theme-name { position: fixed; bottom: 12px; right: 44px; color: var(--text-2); background: var(--surface); border: 1px solid var(--border);
+  padding: 2px 10px; border-radius: 999px; font-size: .8rem; opacity: 0; transition: opacity .4s; pointer-events: none; z-index: 5; }
+.theme-name.show { opacity: 1; }
+/* icon colors that would vanish on a light background */
+:root[data-light] .fa-xp, :root[data-light] .fa-gold { color: #c99a00; } :root[data-light] .fa-sun { color: #e0a000; }
+:root[data-light] .fa-moon { color: #6b74b8; } :root[data-light] .fa-silver { color: #8a90a0; }
+.stale { position: fixed; bottom: 1vh; right: calc(1vw + 40px); background: var(--bad); color: #fff; padding: .4em .9em; border-radius: 8px; display: none; }
 /* phones and narrow windows: one scrolling column instead of the fixed monitor layout */
 @media (max-width: 760px) {
   body { overflow: auto; font-size: 14px; }
@@ -306,12 +320,14 @@ footer b { color: var(--text-2); font-weight: 500; }
   <footer id="footer"></footer>
 </div>
 <div id="tip"><div class="tt" id="tip-t"></div><div class="td" id="tip-d"></div></div>
+<button class="theme-btn" id="theme-btn" title="Change colors" aria-label="Change colors"></button><div class="theme-name" id="theme-name"></div>
 <div class="stale" id="stale">Dashboard lost contact with dashboard.py</div>
 
 <script>
 const $ = id => document.getElementById(id);
 // Font Awesome Free 7 solid icons (CC BY 4.0, fontawesome.com): [viewBox width, path]
 const FA_PATHS = {
+  "palette": [512, "M512 256c0 .9 0 1.8 0 2.7-.4 36.5-33.6 61.3-70.1 61.3L344 320c-26.5 0-48 21.5-48 48 0 3.4 .4 6.7 1 9.9 2.1 10.2 6.5 20 10.8 29.9 6.1 13.8 12.1 27.5 12.1 42 0 31.8-21.6 60.7-53.4 62-3.5 .1-7 .2-10.6 .2-141.4 0-256-114.6-256-256S114.6 0 256 0 512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"],
   "heart": [512, "M241 87.1l15 20.7 15-20.7C296 52.5 336.2 32 378.9 32 452.4 32 512 91.6 512 165.1l0 2.6c0 112.2-139.9 242.5-212.9 298.2-12.4 9.4-27.6 14.1-43.1 14.1s-30.8-4.6-43.1-14.1C139.9 410.2 0 279.9 0 167.7l0-2.6C0 91.6 59.6 32 133.1 32 175.8 32 216 52.5 241 87.1z"],
   "utensils": [512, "M63.9 14.4C63.1 6.2 56.2 0 48 0s-15.1 6.2-16 14.3L17.9 149.7c-1.3 6-1.9 12.1-1.9 18.2 0 45.9 35.1 83.6 80 87.7L96 480c0 17.7 14.3 32 32 32s32-14.3 32-32l0-224.4c44.9-4.1 80-41.8 80-87.7 0-6.1-.6-12.2-1.9-18.2L223.9 14.3C223.1 6.2 216.2 0 208 0s-15.1 6.2-15.9 14.4L178.5 149.9c-.6 5.7-5.4 10.1-11.1 10.1-5.8 0-10.6-4.4-11.2-10.2L143.9 14.6C143.2 6.3 136.3 0 128 0s-15.2 6.3-15.9 14.6L99.8 149.8c-.5 5.8-5.4 10.2-11.2 10.2-5.8 0-10.6-4.4-11.1-10.1L63.9 14.4zM448 0C432 0 320 32 320 176l0 112c0 35.3 28.7 64 64 64l32 0 0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-448c0-17.7-14.3-32-32-32z"],
   "star": [576, "M309.5-18.9c-4.1-8-12.4-13.1-21.4-13.1s-17.3 5.1-21.4 13.1L193.1 125.3 33.2 150.7c-8.9 1.4-16.3 7.7-19.1 16.3s-.5 18 5.8 24.4l114.4 114.5-25.2 159.9c-1.4 8.9 2.3 17.9 9.6 23.2s16.9 6.1 25 2L288.1 417.6 432.4 491c8 4.1 17.7 3.3 25-2s11-14.2 9.6-23.2L441.7 305.9 556.1 191.4c6.4-6.4 8.6-15.8 5.8-24.4s-10.1-14.9-19.1-16.3L383 125.3 309.5-18.9z"],
@@ -375,15 +391,63 @@ function ago(ts) {
   const d = Math.round(s / 86400);
   return d === 1 ? "yesterday" : `${d} days ago`;
 }
+// Color themes, cycled by the palette button (bottom-right). Saved per browser.
+const DARK_MC = {"--mc-yellow": "#ffff55", "--mc-green": "#55ff55", "--mc-purple": "#ff55ff"};
+const LIGHT_MC = {"--mc-yellow": "#9c7f00", "--mc-green": "#1c8c1c", "--mc-purple": "#a32ca3"};
+const THEMES = [
+  {name: "Default", vars: {"--bg": "#110d17", "--surface": "#1b1623", "--surface-2": "#241d2f", "--border": "#322a40", "--grid": "#2a2335",
+    "--text": "#f3eff8", "--text-2": "#bdb3cc", "--muted": "#8b8199", "--accent": "#ffb0e7", "--accent-text": "#ffb0e7",
+    "--good": "#4cc38a", "--warn": "#f0b429", "--bad": "#f2676b", "--sleep": "#8fa8ff", "--cave-bg": "#2a1418", ...DARK_MC}},
+  {name: "Light", light: true, vars: {"--bg": "#f3f0f7", "--surface": "#ffffff", "--surface-2": "#f1ecf6", "--border": "#dcd3e6", "--grid": "#e9e3f0",
+    "--text": "#1d1724", "--text-2": "#4f4560", "--muted": "#7d7290", "--accent": "#e15aa9", "--accent-text": "#c4398c",
+    "--good": "#1f9d63", "--warn": "#b7791f", "--bad": "#d93b45", "--sleep": "#4d6bd8", "--cave-bg": "#fde6e8", ...LIGHT_MC}},
+  {name: "Cotton Candy", light: true, vars: {"--bg": "#fbf0f6", "--surface": "#ffffff", "--surface-2": "#f4eefc", "--border": "#e8d5ee", "--grid": "#f0e6f6",
+    "--text": "#3b2b5a", "--text-2": "#665789", "--muted": "#9284ab", "--accent": "#b298e7", "--accent-text": "#8b67d8",
+    "--good": "#3faab0", "--warn": "#d0913a", "--bad": "#e0609a", "--sleep": "#7fc9cb", "--cave-bg": "#fde1ee", ...LIGHT_MC}},
+  {name: "Watermelon", vars: {"--bg": "#2a2a2a", "--surface": "#363636", "--surface-2": "#4a4a4a", "--border": "#555555", "--grid": "#474747",
+    "--text": "#f6f6f6", "--text-2": "#d0d0d0", "--muted": "#a2a2a2", "--accent": "#fc6c85", "--accent-text": "#ff8ea1",
+    "--good": "#89f336", "--warn": "#f3c736", "--bad": "#ff5a5a", "--sleep": "#adebb3", "--cave-bg": "#4a2a30", ...DARK_MC}},
+  {name: "Electropop", vars: {"--bg": "#080a12", "--surface": "#10141f", "--surface-2": "#171d2d", "--border": "#243049", "--grid": "#1c2436",
+    "--text": "#effcff", "--text-2": "#a9c6d3", "--muted": "#6f8999", "--accent": "#00f0ff", "--accent-text": "#00f0ff",
+    "--good": "#00ff81", "--warn": "#ffa900", "--bad": "#ff6800", "--sleep": "#7aa8ff", "--cave-bg": "#2b1606", ...DARK_MC}},
+  {name: "Cool Blues", vars: {"--bg": "#06111d", "--surface": "#0b1b2d", "--surface-2": "#11263d", "--border": "#1c3956", "--grid": "#152e47",
+    "--text": "#e8f8ff", "--text-2": "#9fc4d9", "--muted": "#6a8ea6", "--accent": "#00aeff", "--accent-text": "#00ffff",
+    "--good": "#00ff52", "--warn": "#00de94", "--bad": "#ff5d73", "--sleep": "#00ffff", "--cave-bg": "#2a1222", ...DARK_MC}},
+  {name: "Breakfast Tea", vars: {"--bg": "#1f1206", "--surface": "#331c08", "--surface-2": "#432a14", "--border": "#664c36", "--grid": "#4a331f",
+    "--text": "#fff2e4", "--text-2": "#ccbeb1", "--muted": "#a08f80", "--accent": "#ffd3ac", "--accent-text": "#ffd3ac",
+    "--good": "#a3c77f", "--warn": "#f0b45a", "--bad": "#e8735a", "--sleep": "#ccbeb1", "--cave-bg": "#4a1c10", ...DARK_MC}},
+  {name: "Honeycomb", light: true, vars: {"--bg": "#fdf5cc", "--surface": "#fffdd0", "--surface-2": "#f9ecb0", "--border": "#ead27c", "--grid": "#f3e3a0",
+    "--text": "#3b230f", "--text-2": "#6e4a25", "--muted": "#97764a", "--accent": "#ffc107", "--accent-text": "#895129",
+    "--good": "#5f9a2b", "--warn": "#d18a00", "--bad": "#c8442c", "--sleep": "#895129", "--cave-bg": "#fbdcc8", ...LIGHT_MC}},
+];
+let themeIdx = 0;
+try { themeIdx = Math.max(0, THEMES.findIndex(t => t.name === localStorage.getItem("theme"))); } catch (e) {}
+let THEME = THEMES[themeIdx];
+function applyTheme() {
+  THEME = THEMES[themeIdx];
+  const r = document.documentElement;
+  for (const [k, v] of Object.entries(THEME.vars)) r.style.setProperty(k, v);
+  r.style.setProperty("--accent-dim", THEME.vars["--accent"] + "33");
+  if (THEME.light) r.setAttribute("data-light", ""); else r.removeAttribute("data-light");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME.vars["--bg"]);
+}
+applyTheme();
 // Minecraft's chat colors, for players' /color choices
 const MC = {black: "#000000", dark_blue: "#0000aa", dark_green: "#00aa00", dark_aqua: "#00aaaa", dark_red: "#aa0000",
   dark_purple: "#aa00aa", gold: "#ffaa00", gray: "#aaaaaa", dark_gray: "#555555", blue: "#5555ff", green: "#55ff55",
   aqua: "#55ffff", red: "#ff5555", light_purple: "#ff55ff", yellow: "#ffff55", white: "#ffffff"};
-const DARK = new Set(["black", "dark_blue", "dark_gray"]);   // too dark to read on this background: shown on a light chip
+function lum(hex) {   // relative luminance of #rrggbb
+  const v = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4);
+  return .2126 * v[0] + .7152 * v[1] + .0722 * v[2];
+}
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
 function nameHtml(name) {
   const c = ((D && D.colors) || {})[name];
-  const style = c && MC[c] ? ` style="color:${MC[c]}"` : "";
-  return `<span class="nm${c && DARK.has(c) ? " chip" : ""}"${style}>${esc(name)}</span>`;
+  if (!c || !MC[c]) return `<span class="nm">${esc(name)}</span>`;
+  // a /color that's hard to read on this theme's background gets a contrasting chip behind it
+  const bg = THEME.vars["--surface"];
+  const chip = contrast(MC[c], bg) < 2.6 ? (lum(MC[c]) > .3 ? "#2a2335" : "#f1edf6") : "";
+  return `<span class="nm${chip ? " chip" : ""}" style="color:${MC[c]}${chip ? `;--chip:${chip}` : ""}">${esc(name)}</span>`;
 }
 // [Advancement] with its in-game description on hover
 function advSpan(title, desc, challenge) {
@@ -754,6 +818,17 @@ $("fact-title").onclick = () => { renderFact(true); clearInterval(factTimer); fa
 let cycleTimer = setInterval(() => renderCycle(true), 15000);
 $("cycle-title").onclick = () => { renderCycle(true); clearInterval(cycleTimer); cycleTimer = setInterval(() => renderCycle(true), 15000); };
 window.addEventListener("resize", render);
+$("theme-btn").innerHTML = fa("palette");
+let themeNameTimer;
+$("theme-btn").onclick = () => {
+  themeIdx = (themeIdx + 1) % THEMES.length;
+  applyTheme();
+  try { localStorage.setItem("theme", THEME.name); } catch (e) {}
+  if (D) render();
+  const n = $("theme-name");
+  n.textContent = THEME.name; n.classList.add("show");
+  clearTimeout(themeNameTimer); themeNameTimer = setTimeout(() => n.classList.remove("show"), 1600);
+};
 </script>
 </body>
 </html>

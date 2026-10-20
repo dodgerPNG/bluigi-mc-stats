@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bloogi Server Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #110d17;
+  --surface: #1b1623;
+  --surface-2: #241d2f;
+  --border: #322a40;
+  --text: #f3eff8;
+  --text-2: #bdb3cc;
+  --muted: #8b8199;
+  --accent: #ffb0e7;
+  --accent-dim: #ffb0e733;
+  --good: #4cc38a;
+  --warn: #f0b429;
+  --bad: #f2676b;
+  --sleep: #8fa8ff;
+  --grid: #2a2335;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 15px/1.35 Inter, system-ui, sans-serif;
+  overflow: hidden;
+}
+.app {
+  height: 100vh; padding: 1.4vh 1.4vw; display: grid; gap: 1.2vh 1vw;
+  grid-template-rows: auto auto 1fr auto;
+}
+h1, h2, .pixel { font-family: "Pixelify Sans", Inter, sans-serif; font-weight: 700; letter-spacing: .02em; }
+h2 { font-size: 1.05rem; margin: 0 0 .7vh; color: var(--text-2); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.4vh 1vw; min-height: 0; overflow: hidden; }
+
+/* header */
+header { display: flex; align-items: center; gap: 1.5vw; }
+header h1 { font-size: 2.3rem; margin: 0; line-height: 1; }
+header h1 span { color: var(--accent); }
+.motd { color: var(--text-2); font-size: 1rem; margin-top: .4vh; }
+.pill { display: inline-flex; align-items: center; gap: .5em; padding: .45em 1em; border-radius: 999px; font-weight: 600; font-size: 1.1rem; border: 1px solid; }
+.pill .dot { width: .7em; height: .7em; border-radius: 50%; background: currentColor; }
+.pill.online { color: var(--good); border-color: #4cc38a66; background: #4cc38a14; }
+.pill.online .dot { animation: pulse 2s infinite; }
+.pill.sleeping { color: var(--sleep); border-color: #8fa8ff66; background: #8fa8ff14; }
+.pill.starting { color: var(--warn); border-color: #f0b42966; background: #f0b42914; }
+.pill.offline { color: var(--bad); border-color: #f2676b66; background: #f2676b14; }
+@keyframes pulse { 50% { opacity: .35; } }
+.spacer { flex: 1; }
+.score { border: 1px solid #f2676b88; background: linear-gradient(135deg, #2a1418, var(--surface) 80%); border-radius: 14px;
+  padding: .5vh 1vw; display: grid; grid-template-columns: auto auto auto; gap: 0 1vw; align-items: center; }
+.score .ttl { grid-column: 1 / -1; font-family: "Pixelify Sans", Inter, sans-serif; color: var(--bad); font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; }
+.score .side { text-align: center; }
+.score .n { font-size: 1.5rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.score .lab { color: var(--text-2); font-size: .75rem; }
+.score .vs { color: var(--muted); font-weight: 600; }
+.score .win { color: var(--good); }
+.score .lose { color: var(--bad); }
+.score .foot { grid-column: 1 / -1; color: var(--muted); font-size: .78rem; white-space: nowrap; }
+.score .foot b { color: var(--text-2); font-weight: 500; }
+.clock { text-align: right; }
+.clock .big { font-size: 2.2rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; }
+.clock .small { color: var(--text-2); margin-top: .4vh; }
+
+/* tiles */
+.tiles { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1vw; }
+.tile { padding: 1.2vh 1vw; }
+.tile .label { color: var(--text-2); font-size: .85rem; text-transform: uppercase; letter-spacing: .07em; }
+.tile .value { font-size: 2rem; font-weight: 700; margin-top: .3vh; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tile .value small { font-size: 1rem; color: var(--text-2); font-weight: 500; }
+.tile .sub { color: var(--muted); font-size: .85rem; margin-top: .3vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meter { height: 6px; background: var(--grid); border-radius: 3px; margin-top: .8vh; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s; }
+.ok { color: var(--good); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+
+/* main */
+main { display: grid; grid-template-columns: 1fr 1.25fr 1.15fr; gap: 1vw; min-height: 0; }
+.col { display: grid; gap: 1.2vh; min-height: 0; }
+.col1 { grid-template-rows: 1fr; }
+.col2 { grid-template-rows: 1fr 1fr 1fr; }
+.col3 { grid-template-rows: 1.45fr auto 1.2fr; }
+.card.flex { display: flex; flex-direction: column; }
+.card.flex > .body { flex: 1; min-height: 0; position: relative; }
+
+.players { display: grid; gap: .9vh; overflow: hidden; }
+.players.two { grid-template-columns: 1fr 1fr; gap: .7vh .6vw; }
+.players.two .player { grid-template-columns: 40px 1fr; }
+.players.two .head { width: 40px; height: 40px; }
+.players.two .right { grid-column: 2; text-align: left; }
+.players.two .right b { display: inline; margin-right: .3em; }
+.player { display: grid; grid-template-columns: 52px 1fr auto; gap: .8vw; align-items: center; background: var(--surface-2); border-radius: 10px; padding: .8vh .7vw; }
+.head { width: 52px; height: 52px; border-radius: 6px; image-rendering: pixelated; background: var(--grid); display: grid; place-items: center; font-weight: 700; color: var(--accent); overflow: hidden; }
+.head img { width: 100%; height: 100%; image-rendering: pixelated; }
+.player .name { font-weight: 600; font-size: 1.1rem; }
+.player .meta { color: var(--text-2); font-size: .85rem; display: flex; gap: .9em; flex-wrap: wrap; margin-top: .2vh; }
+.player .right { text-align: right; color: var(--text-2); font-size: .85rem; }
+.player .right b { display: block; color: var(--text); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.dim { display: inline-flex; align-items: center; gap: .35em; }
+.dim i { width: .6em; height: .6em; border-radius: 2px; display: inline-block; }
+.empty { color: var(--text-2); display: grid; place-items: center; height: 100%; text-align: center; font-size: 1.05rem; }
+.empty .ghost { font-size: 3rem; margin-bottom: .5vh; }
+
+.roster { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6vh .6vw; margin-top: 1vh; }
+.mini { display: flex; gap: .5vw; align-items: center; font-size: .85rem; color: var(--text-2); min-width: 0; }
+.mini .head { width: 26px; height: 26px; border-radius: 4px; flex: none; font-size: .7rem; }
+.mini span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini b { color: var(--text); font-weight: 500; }
+
+.body > svg { display: block; }
+svg text { fill: var(--muted); font: 12px Inter, system-ui, sans-serif; }
+svg .lbl { fill: var(--text-2); }
+svg .val { fill: var(--text); font-weight: 600; }
+.chart-head { display: flex; justify-content: space-between; align-items: baseline; }
+.chart-head .now { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.chart-head .now small { color: var(--muted); font-weight: 400; }
+
+/* leaderboard */
+.board-title { display: flex; justify-content: space-between; align-items: baseline; }
+.board-title .pixel { font-size: 1.5rem; color: var(--accent); }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.dots i.on { background: var(--accent); }
+/* 9 rows always share the card's height, and the text shrinks with the window */
+.rows { position: absolute; inset: .6vh 0 0 0; display: grid; grid-template-rows: repeat(9, minmax(0, 1fr)); gap: .3vh; }
+.row { display: grid; grid-template-columns: 1.6em 2.4vh 7.5em 1fr auto; gap: .5vw; align-items: center; font-size: min(.92rem, 1.75vh); min-height: 0; }
+.row .rank { color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.row .head { width: 2.4vh; height: 2.4vh; border-radius: 3px; font-size: .6rem; }
+.row .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .bar { height: 10px; background: var(--grid); border-radius: 0 4px 4px 0; overflow: hidden; }
+.row .bar i { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; transition: width .8s; }
+.row:first-child .nm { font-weight: 700; }
+.row .num { font-variant-numeric: tabular-nums; text-align: right; min-width: 4.5em; }
+.fade { animation: fade .6s; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } }
+
+.fact { font-size: 1.25rem; line-height: 1.45; min-height: 3.6em; }
+.fact b { color: var(--accent); }
+.factcard { transition: border-color .6s, background .6s; }
+.factcard.cave { border-color: #f2676b88; background: linear-gradient(135deg, #2a1418, var(--surface) 70%); }
+.factcard.cave h2 { color: var(--bad); }
+.factcard.cave .fact b { color: #ff9a9d; }
+
+/* arrows */
+.nav { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); width: 2em; height: 2em; border-radius: 8px;
+  font: 600 1rem Inter, sans-serif; cursor: pointer; display: grid; place-items: center; padding: 0; }
+.nav:hover { color: var(--accent); border-color: var(--accent); }
+.board-title .mid { display: flex; flex-direction: column; align-items: center; gap: .5vh; flex: 1; }
+
+/* chat */
+.chat { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: .5vh; overflow: hidden; }
+.msg { flex-shrink: 0; display: grid; grid-template-columns: 3.2em 22px 1fr; gap: .5vw; align-items: start; font-size: .95rem; }
+.msg .head { width: 22px; height: 22px; border-radius: 4px; font-size: .6rem; margin-top: .1em; }
+.msg .nohead { width: 22px; }
+.msg .t { color: var(--muted); font-size: .78rem; font-variant-numeric: tabular-nums; padding-top: .2em; white-space: nowrap; cursor: help; }
+.msg .txt { overflow-wrap: anywhere; }
+.msg.k-joined .txt, .msg.k-left .txt { color: #ffff55; }
+.msg.k-start .txt, .msg.k-stop .txt { color: var(--muted); font-style: italic; }
+.msg.k-cave .txt { color: var(--bad); }
+.msg.k-emote .txt { font-style: italic; }
+.adv { color: #55ff55; }
+.adv.challenge { color: #ff55ff; }
+.nm { font-weight: 600; }
+[data-desc] { cursor: help; }
+/* Minecraft-style tooltip */
+#tip { position: fixed; z-index: 10; pointer-events: none; display: none; max-width: 340px;
+  background: #100010f2; padding: 6px 9px; border-radius: 3px; font: 500 15px/1.35 "Pixelify Sans", Inter, sans-serif;
+  box-shadow: inset 0 0 0 1px #100010, inset 0 0 0 3px #5000ff66, 0 6px 20px #0008; }
+#tip .tt { color: #55ff55; }
+#tip .td { color: #55ff55; }
+#tip.challenge .tt, #tip.challenge .td { color: #ff55ff; }
+.nm.chip { background: #e9e4f0; padding: 0 .3em; border-radius: 4px; }
+.msg.new { animation: fade .6s; }
+
+/* cycling card */
+.cycle-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1vw; }
+.cycle-head h2 { cursor: pointer; flex: 1; }
+.cave-alert { display: none; color: var(--bad); border: 1px solid #f2676b88; background: #f2676b1a; padding: .45em 1em; border-radius: 999px; font-weight: 600; animation: pulse 1.6s infinite; }
+
+.feed { display: grid; gap: .55vh; font-size: .92rem; overflow: hidden; }
+.ev { display: grid; grid-template-columns: 4.6em 1.4em 1fr; gap: .4vw; align-items: baseline; }
+.ev .t { color: var(--muted); font-variant-numeric: tabular-nums; font-size: .82rem; }
+.ev .x { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-2); }
+.ev .x b { color: var(--text); font-weight: 600; }
+.ev.chat .x { color: var(--text); }
+
+footer { display: flex; gap: 2.2vw; color: var(--muted); font-size: .88rem; flex-wrap: wrap; }
+footer b { color: var(--text-2); font-weight: 500; }
+.stale { position: fixed; bottom: 1vh; right: 1vw; background: var(--bad); color: #fff; padding: .4em .9em; border-radius: 8px; display: none; }
+/* phones and narrow windows: one scrolling column instead of the fixed monitor layout */
+@media (max-width: 760px) {
+  body { overflow: auto; font-size: 14px; }
+  .app { height: auto; min-height: 100vh; padding: 12px 16px 20px; gap: 12px; grid-template-rows: none; }
+  .card { padding: 12px 14px; }
+  header { flex-wrap: wrap; gap: 10px 12px; }
+  header > div:first-child { flex: 1 1 100%; }
+  header h1 { font-size: 1.9rem; }
+  .spacer { display: none; }
+  .pill { font-size: .95rem; }
+  .clock { margin-left: auto; }
+  .clock .big { font-size: 1.6rem; }
+  .score { order: 5; flex: 1 1 100%; padding: 8px 12px; gap: 0 12px; justify-content: center; }
+  .score .foot { white-space: normal; }
+  .tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile { padding: 10px 12px; }
+  .tile .value { font-size: 1.6rem; }
+  .tile .sub { white-space: normal; }
+  main { grid-template-columns: 1fr; gap: 12px; }
+  .col { display: flex; flex-direction: column; gap: 12px; }
+  h2 { margin-bottom: 8px; }
+  .players, .players.two { grid-template-columns: 1fr; gap: 8px; overflow: visible; }
+  .players.two .player, .player { grid-template-columns: 44px 1fr auto; gap: 10px; padding: 8px 10px; }
+  .players.two .head, .player .head { width: 44px; height: 44px; }
+  .players.two .right { grid-column: auto; text-align: right; }
+  .players.two .right b { display: block; margin: 0; }
+  .col2 .card .body { height: 150px; flex: none; }
+  .col3 > .card:first-child .body { height: 330px; flex: none; }
+  .col3 > .card:last-child .body { height: 340px; flex: none; }
+  .row { grid-template-columns: 1.6em 22px 7em 1fr auto; gap: 8px; font-size: .9rem; }
+  .row .head { width: 22px; height: 22px; }
+  .rows { gap: 3px; }
+  .fact { font-size: 1.05rem; min-height: 0; }
+  .msg { gap: 8px; font-size: .9rem; }
+  footer { gap: 6px 14px; font-size: .8rem; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>spooky<span>-</span>bloogui</h1>
+      <div class="motd" id="motd"></div>
+    </div>
+    <div class="pill offline" id="pill"><span class="dot"></span><span id="pilltext">Connecting…</span></div>
+    <div class="cave-alert" id="cave-alert">👁️ The Cave Dweller is out</div>
+    <div class="spacer"></div>
+    <div class="score" id="score" style="display:none">
+      <div class="ttl">👁️ Cave Dweller score</div>
+      <div class="side"><div class="n" id="sc-p">0</div><div class="lab">players</div></div>
+      <div class="vs">vs</div>
+      <div class="side"><div class="n" id="sc-d">0</div><div class="lab">cave dweller</div></div>
+      <div class="foot" id="sc-foot"></div>
+    </div>
+    <div class="clock">
+      <div class="big" id="clock"></div>
+      <div class="small" id="ingame"></div>
+    </div>
+  </header>
+
+  <section class="tiles">
+    <div class="card tile"><div class="label">Players online</div><div class="value" id="t-players">–</div><div class="sub" id="t-players-sub"></div></div>
+    <div class="card tile"><div class="label">Server speed</div><div class="value" id="t-tps">–</div><div class="sub" id="t-tps-sub"></div></div>
+    <div class="card tile"><div class="label">Uptime</div><div class="value" id="t-up">–</div><div class="sub" id="t-up-sub"></div></div>
+    <div class="card tile"><div class="label">Server memory</div><div class="value" id="t-ram">–</div><div class="meter"><i id="t-ram-bar" style="width:0"></i></div></div>
+    <div class="card tile"><div class="label">bork-mini</div><div class="value" id="t-cpu">–</div><div class="sub" id="t-cpu-sub"></div></div>
+    <div class="card tile"><div class="label">Oracle relay</div><div class="value" id="t-relay">–</div><div class="sub" id="t-relay-sub">mc-relay · 157.151.243.120</div></div>
+  </section>
+
+  <main>
+    <div class="col col1">
+      <div class="card flex"><h2>Online now</h2><div class="body"><div class="players" id="players"></div></div></div>
+    </div>
+    <div class="col col2">
+      <div class="card flex">
+        <div class="chart-head"><h2>Tick time · last hour</h2><span class="now" id="mspt-now"></span></div>
+        <div class="body" id="c-mspt"></div>
+      </div>
+      <div class="card flex">
+        <div class="chart-head"><h2>Players online · last 24 h</h2><span class="now" id="peak"></span></div>
+        <div class="body" id="c-24"></div>
+      </div>
+      <div class="card flex" id="cycle-card">
+        <div class="cycle-head"><h2 id="cycle-title"></h2><span class="now" id="cycle-sub"></span><span class="dots" id="cycle-dots"></span></div>
+        <div class="body" id="c-cycle"></div>
+      </div>
+    </div>
+    <div class="col col3">
+      <div class="card flex">
+        <div class="board-title"><button class="nav" id="prev" title="Previous">‹</button><div class="mid"><span class="pixel" id="board-title">Leaderboard</span><span class="dots" id="dots"></span></div><button class="nav" id="next" title="Next">›</button></div>
+        <div class="body"><div class="rows" id="rows"></div></div>
+      </div>
+      <div class="card factcard" id="factcard"><h2 id="fact-title">Did you know?</h2><div class="fact" id="fact"></div></div>
+      <div class="card flex"><div class="chart-head"><h2>Chat</h2><span class="now"><small id="chat-sub">live</small></span></div><div class="body"><div class="chat" id="chat"></div></div></div>
+    </div>
+  </main>
+
+  <footer id="footer"></footer>
+</div>
+<div id="tip"><div class="tt" id="tip-t"></div><div class="td" id="tip-d"></div></div>
+<div class="stale" id="stale">Dashboard lost contact with dashboard.py</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const minsSince = ts => Math.max(0, Math.floor((Date.now() / 1000 - ts) / 60));
+const md = s => esc(s).replace(/\{\{min:(\d+)\}\}/g, (_, ts) => num(minsSince(+ts)))   // live minute counters
+  .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+const num = (n, d = 0) => Number(n).toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
+const GB = b => (b / 1024 ** 3);
+let D = null, boardIdx = 0, factIdx = 0, lastOk = 0;
+
+function dur(s) {
+  s = Math.max(0, Math.floor(s));
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+}
+function ago(ts) {
+  if (!ts) return "never";
+  const s = Date.now() / 1000 - ts;
+  if (s < 90) return "just now";
+  if (s < 3600) return `${Math.round(s / 60)} min ago`;
+  if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+  const d = Math.round(s / 86400);
+  return d === 1 ? "yesterday" : `${d} days ago`;
+}
+// Minecraft's chat colors, for players' /color choices
+const MC = {black: "#000000", dark_blue: "#0000aa", dark_green: "#00aa00", dark_aqua: "#00aaaa", dark_red: "#aa0000",
+  dark_purple: "#aa00aa", gold: "#ffaa00", gray: "#aaaaaa", dark_gray: "#555555", blue: "#5555ff", green: "#55ff55",
+  aqua: "#55ffff", red: "#ff5555", light_purple: "#ff55ff", yellow: "#ffff55", white: "#ffffff"};
+const DARK = new Set(["black", "dark_blue", "dark_gray"]);   // too dark to read on this background: shown on a light chip
+function nameHtml(name) {
+  const c = ((D && D.colors) || {})[name];
+  const style = c && MC[c] ? ` style="color:${MC[c]}"` : "";
+  return `<span class="nm${c && DARK.has(c) ? " chip" : ""}"${style}>${esc(name)}</span>`;
+}
+// [Advancement] with its in-game description on hover
+function advSpan(title, desc, challenge) {
+  const tip = desc ? ` data-title="${esc(title)}" data-desc="${esc(desc)}"` : "";
+  return `<span class="adv ${challenge ? "challenge" : ""}"${tip}>[${esc(title)}]</span>`;
+}
+document.addEventListener("mousemove", ev => {
+  const tip = $("tip"), el = ev.target.closest && ev.target.closest("[data-desc]");
+  if (!el) { tip.style.display = "none"; return; }
+  $("tip-t").textContent = el.dataset.title;
+  $("tip-d").textContent = el.dataset.desc;
+  tip.className = el.classList.contains("challenge") ? "challenge" : "";
+  tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(ev.clientX + 14, innerWidth - w - 8) + "px";
+  tip.style.top = (ev.clientY - h - 12 < 0 ? ev.clientY + 18 : ev.clientY - h - 12) + "px";
+});
+function shortAgo(ts) {
+  if (!ts) return "–";
+  const s = Date.now() / 1000 - ts;
+  return s < 3600 ? Math.max(1, Math.round(s / 60)) + "m ago" : s < 86400 ? Math.round(s / 3600) + "h ago" : Math.round(s / 86400) + "d ago";
+}
+function head(name, uuid) {
+  const ini = esc((name || "?").slice(0, 2));
+  if (!uuid) return `<div class="head">${ini}</div>`;
+  return `<div class="head"><img src="https://mc-heads.net/avatar/${esc(uuid)}/64" alt="" onerror="this.parentNode.textContent='${ini}'"></div>`;
+}
+const DIMS = {
+  "minecraft:overworld": ["Overworld", "#4cc38a"],
+  "minecraft:the_nether": ["Nether", "#f2676b"],
+  "minecraft:the_end": ["The End", "#b48cff"],
+};
+function dimLabel(d) {
+  if (!d) return "";
+  const [n, c] = DIMS[d] || [String(d).split(":").pop().replace(/_/g, " "), "#8b8199"];
+  return `<span class="dim"><i style="background:${c}"></i>${esc(n)}</span>`;
+}
+
+/* --- tiny SVG charts --- */
+function size(el) { const r = el.getBoundingClientRect(); return [Math.max(200, r.width), Math.max(60, r.height)]; }
+function svg(w, h, inner) { return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${inner}</svg>`; }
+function niceMax(v, min) { v = Math.max(v, min); const p = 10 ** Math.floor(Math.log10(v)); return Math.ceil(v / p * 2) / 2 * p; }
+function gridY(w, h, pad, max, ticks, fmt) {
+  ticks = [4, 3, 5, 2].find(t => Math.abs(max / t - Math.round(max / t)) < 1e-9 && max / t >= 1) || ticks;
+  let g = "";
+  for (let i = 0; i <= ticks; i++) {
+    const v = max * i / ticks, y = h - pad.b - (h - pad.t - pad.b) * i / ticks;
+    g += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+    g += `<text x="${pad.l - 6}" y="${y + 4}" text-anchor="end">${fmt(v)}</text>`;
+  }
+  return g;
+}
+function lineChart(el, pts, o) {
+  const [w, h] = size(el), pad = {l: 38, r: 10, t: 8, b: 20};
+  const t1 = o.t1, t0 = o.t0;
+  const max = niceMax(Math.max(0, ...pts.map(p => p[1])), o.minMax);
+  const X = t => pad.l + (w - pad.l - pad.r) * (t - t0) / (t1 - t0);
+  const Y = v => h - pad.b - (h - pad.t - pad.b) * Math.min(v, max) / max;
+  let g = gridY(w, h, pad, max, 4, o.yfmt);
+  if (o.target != null && o.target <= max) {
+    g += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${Y(o.target)}" y2="${Y(o.target)}" stroke="var(--bad)" stroke-dasharray="4 4" stroke-width="1"/>`;
+    g += `<text x="${w - pad.r}" y="${Y(o.target) - 4}" text-anchor="end" class="lbl">${o.targetLabel}</text>`;
+  }
+  for (const [frac, lab] of o.xlabels) g += `<text x="${pad.l + (w - pad.l - pad.r) * frac}" y="${h - 4}" text-anchor="middle">${lab}</text>`;
+  if (pts.length > 1) {
+    let d = "";
+    pts.forEach((p, i) => {
+      const x = X(p[0]).toFixed(1), y = Y(p[1]).toFixed(1);
+      if (o.step && i) d += `H${x}V${y}`; else d += (i ? "L" : "M") + x + "," + y;
+    });
+    const base = h - pad.b;
+    g += `<path d="${d}V${base}H${X(pts[0][0]).toFixed(1)}Z" fill="var(--accent-dim)" stroke="none"/>`;
+    g += `<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+    const last = pts[pts.length - 1];
+    g += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+  } else {
+    g += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" class="lbl">${o.emptyText || "Waiting for data…"}</text>`;
+  }
+  el.innerHTML = svg(w, h, g);
+}
+function barChart(el, vals, labels, o) {
+  const [w, h] = size(el), pad = {l: 38, r: 6, t: 14, b: 20};
+  const max = niceMax(Math.max(0, ...vals), o.minMax || 1);
+  const n = vals.length, slot = (w - pad.l - pad.r) / n, bw = Math.max(3, slot - 4);
+  let g = gridY(w, h, pad, max, 2, o.yfmt);
+  vals.forEach((v, i) => {
+    const bh = (h - pad.t - pad.b) * v / max, x = pad.l + i * slot + (slot - bw) / 2, y = h - pad.b - bh;
+    const hl = o.highlight === i;
+    if (v > 0) g += `<path d="M${x},${h - pad.b}V${y + Math.min(4, bh)}q0,-4 4,-4h${bw - 8}q4,0 4,4V${h - pad.b}Z" fill="var(--accent)" opacity="${hl ? 1 : .75}"/>`;
+    if (labels[i]) g += `<text x="${x + bw / 2}" y="${h - 4}" text-anchor="middle" class="${hl ? "val" : ""}">${labels[i]}</text>`;
+    if (o.valueLabels && v > 0 && (hl || v === Math.max(...vals))) g += `<text x="${x + bw / 2}" y="${y - 3}" text-anchor="middle" class="val">${o.yfmt(v)}</text>`;
+  });
+  el.innerHTML = svg(w, h, g);
+}
+
+/* --- render --- */
+function render() {
+  if (!D) return;
+  const s = D.server || {}, host = D.host || {}, st = D.state;
+  const labels = {online: "Online", sleeping: "Online · nobody on", starting: "Starting up…", offline: "Offline"};
+  $("pill").className = "pill " + st; $("pilltext").textContent = labels[st] || st;
+  $("motd").textContent = D.motd || "";
+
+  // in-game time
+  if (s.daytime != null) {
+    const tod = (s.daytime / 1000 + 6) % 24, hh = Math.floor(tod), mm = Math.floor((tod - hh) * 60);
+    const night = s.daytime % 24000 >= 13000 && s.daytime % 24000 < 23000;
+    const wx = {clear: night ? "🌙 Clear night" : "☀️ Clear", rain: "🌧️ Raining", thunder: "⛈️ Thunderstorm"}[s.weather] || (night ? "🌙 Night" : "☀️ Day");
+    $("ingame").textContent = `Minecraft day ${num(s.day ?? 0)} · ${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")} · ${wx}`;
+  } else $("ingame").textContent = "";
+
+  // tiles
+  const names = s.names || [];
+  $("t-players").innerHTML = s.reachable ? `${names.length}<small> / ${s.max ?? 20}</small>` : "–";
+  const today = D.today || {};
+  $("t-players-sub").textContent = today.players?.length ? `${today.players.length} played today` : "nobody yet today";
+  if (s.mspt != null && st === "online") {
+    const tps = s.tps, cls = s.mspt > 50 ? "bad" : s.mspt > 35 ? "warn" : "ok";
+    const icon = cls === "ok" ? "●" : cls === "warn" ? "▲" : "■";
+    $("t-tps").innerHTML = `<span class="${cls}">${icon}</span> ${num(tps, 1)}<small> TPS</small>`;
+    $("t-tps-sub").textContent = `${num(s.mspt, 1)} ms per tick${s.p95 != null ? ` · worst 5%: ${num(s.p95, 1)} ms` : ""}`;
+  } else {
+    $("t-tps").innerHTML = st === "sleeping" ? `<span style="color:var(--sleep)">💤</span><small> paused</small>` : "–";
+    $("t-tps-sub").textContent = st === "sleeping" ? "the world pauses when it's empty" : "";
+  }
+  $("t-up").textContent = host.uptime_s != null ? dur(host.uptime_s) : "–";
+  $("t-up-sub").textContent = host.uptime_s != null ? "since " + new Date((D.now - host.uptime_s) * 1000).toLocaleString([], {weekday: "short", hour: "numeric", minute: "2-digit"}) : "server isn't running";
+  if (host.java_rss) {
+    $("t-ram").innerHTML = `${num(GB(host.java_rss), 1)}<small> / ${num(GB(host.java_max || host.mem_total), 0)} GB</small>`;
+    $("t-ram-bar").style.width = Math.min(100, 100 * host.java_rss / (host.java_max || host.mem_total)) + "%";
+  } else { $("t-ram").textContent = "–"; $("t-ram-bar").style.width = "0"; }
+  $("t-cpu").innerHTML = host.cpu != null ? `${num(host.cpu, 0)}<small>% CPU</small>` : "–";
+  const bits = [];
+  if (host.temp != null) bits.push(`${host.temp}°C`);
+  if (host.mem_total) bits.push(`RAM ${num(GB(host.mem_used), 1)}/${num(GB(host.mem_total), 0)} GB`);
+  if (host.disk_free) bits.push(`${num(GB(host.disk_free), 0)} GB free`);
+  $("t-cpu-sub").textContent = bits.join(" · ");
+  $("t-relay").innerHTML = D.relay === true ? `<span class="ok">●</span> Up` : D.relay === false ? `<span class="bad">■</span> Down` : `<small>unknown</small>`;
+
+  // online players
+  const P = s.players || [];
+  $("players").classList.toggle("two", P.length > 8);   // two columns when a big group is on
+  if (P.length) {
+    $("players").innerHTML = P.map(p => {
+      const hp = p.health != null ? `❤️ ${num(p.health / 2, 1)}` : "", food = p.food != null ? `🍗 ${num(p.food / 2, 1)}` : "";
+      const lv = p.level != null ? `✨ Lv ${num(p.level)}` : "";
+      return `<div class="player">${head(p.name, p.uuid)}
+        <div><div class="name">${esc(p.name)}</div><div class="meta">${dimLabel(p.dim)}<span>${hp}</span><span>${food}</span><span>${lv}</span></div></div>
+        <div class="right">${p.since ? `<b>${dur(D.now - p.since)}</b>this session` : ""}</div></div>`;
+    }).join("");
+  } else {
+    const ro = (D.roster || []).filter(r => r.last_seen).sort((a, b) => b.last_seen - a.last_seen);
+    const last = ro[0];
+    $("players").innerHTML = `<div class="empty"><div><div class="ghost">👻</div>${st === "offline" ? "The server is offline." : "Nobody's on right now."}
+      ${last ? `<div style="color:var(--muted);margin-top:.5vh">Last on: <b style="color:var(--text)">${esc(last.name)}</b>, ${ago(last.last_seen)}</div>` : ""}</div></div>`;
+    const rosterHtml = (D.roster || []).slice(0, 9).map(r => `<div class="mini">${head(r.name, r.uuid)}<span><b>${esc(r.name)}</b> · ${shortAgo(r.last_seen)}</span></div>`).join("");
+    $("players").innerHTML += `<div class="roster">${rosterHtml}</div>`;
+  }
+
+  // charts
+  const H = D.history || {};
+  renderCycle();
+
+  const mh = D.mspt_hist || [];
+  $("mspt-now").innerHTML = s.mspt != null && st === "online" ? `${num(s.mspt, 1)} ms <small>(under 50 is smooth)</small>` : `<small>${st === "sleeping" ? "paused while empty" : ""}</small>`;
+  lineChart($("c-mspt"), mh.map(p => [p[0], p[1]]), {
+    t0: D.now - 3600, t1: D.now, minMax: 20, target: 50, targetLabel: "50 ms = lag",
+    yfmt: v => num(v) + "ms", xlabels: [[0, "60 min ago"], [.5, "30"], [1, "now"]],
+    emptyText: st === "sleeping" ? "Paused while nobody's on" : "Collecting… (fills in as the dashboard runs)",
+  });
+
+  const o24 = H.online24 || [];
+  $("peak").innerHTML = H.peak ? `record ${H.peak} <small>at once, ${H.peak_t ? new Date(H.peak_t * 1000).toLocaleDateString([], {month: "short", day: "numeric"}) : ""}</small>` : "";
+  lineChart($("c-24"), o24, {
+    t0: D.now - 86400, t1: D.now, minMax: 4, step: true, yfmt: v => num(v),
+    xlabels: [[0, "24 h ago"], [.25, "18"], [.5, "12"], [.75, "6"], [1, "now"]],
+  });
+
+
+  renderBoard(false);
+  renderFact(false);
+  renderChat();
+  renderScore();
+  const cave = D.cave_now || 0;
+  $("cave-alert").style.display = cave ? "block" : "none";
+  $("cave-alert").textContent = cave > 1 ? `👁️ ${cave} Cave Dwellers are out` : "👁️ The Cave Dweller is out";
+
+  // feed
+  const icons = {joined: "➡️", left: "⬅️", adv: "🏆", death: "💀", grave: "🪦", start: "🟢", stop: "🔴", chat: "💬", cave: "👁️"};
+  const feedEl = $("feed");
+  if (feedEl) {
+  const maxRows = Math.max(3, Math.floor(feedEl.parentNode.getBoundingClientRect().height / 24));
+  feedEl.innerHTML = (D.events || []).slice(0, maxRows).map(e => {
+    const t = new Date(e.t * 1000);
+    const tl = (Date.now() / 1000 - e.t < 86400) ? t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : t.toLocaleDateString([], {month: "short", day: "numeric"});
+    let text = e.name ? `${nameHtml(e.name)} ${esc(e.text)}` : esc(e.text);
+    if (e.kind === "adv" && e.adv) {
+      const mm = /^(.*?) \[(.*)\]$/.exec(e.text);
+      if (mm) text = `${nameHtml(e.name)} ${esc(mm[1])} ${advSpan(e.adv, e.desc, e.challenge)}`;
+    }
+    return `<div class="ev ${e.kind}"><span class="t">${tl}</span><span>${icons[e.kind] || "•"}</span><span class="x">${text}</span></div>`;
+  }).join("") || `<div class="empty">Nothing yet</div>`;
+  }
+
+  // footer
+  const w = D.world || {}, tot = D.totals || {};
+  const f = [];
+  if (w.version) f.push(`Fabric <b>${esc(w.version)}</b> · <b>${w.mods}</b> mods`);
+  if (w.size) f.push(`World size <b>${num(GB(w.size), 1)} GB</b>`);
+  f.push(`Whitelist <b>${D.whitelist_on ? "on" : "off"}</b>${w.whitelist ? ` (${w.whitelist} players)` : ""}`);
+  if (tot.players) f.push(`<b>${tot.players}</b> players have joined · <b>${num(tot.deaths)}</b> deaths · <b>${num(tot.advs)}</b> advancements`);
+  if (w.last_backup) f.push(`Last backup <b>${ago(w.last_backup)}</b>`);
+  if (D.public) f.push(`Updated <b>${ago(D.now)}</b> · refreshes every 5 min`);
+  $("footer").innerHTML = f.map(x => `<span>${x}</span>`).join("");
+}
+
+function renderBoard(advance) {
+  const B = (D && D.boards) || [];
+  if (!B.length) { $("rows").innerHTML = `<div class="empty">No stats yet</div>`; return; }
+  if (advance) boardIdx = (boardIdx + 1) % B.length;
+  boardIdx %= B.length;
+  const b = B[boardIdx];
+  $("board-title").textContent = b.title;
+  $("dots").innerHTML = B.map((_, i) => `<i class="${i === boardIdx ? "on" : ""}"></i>`).join("");
+  const max = b.rows[0].value || 1;
+  const online = new Set((D.server || {}).names || []);
+  $("rows").innerHTML = b.rows.map((r, i) => `<div class="row ${advance ? "fade" : ""}" style="animation-delay:${i * 40}ms">
+    <span class="rank">${i + 1}</span>${r.img ? `<div class="head"><img src="${esc(r.img.replace(/^\//, ""))}" alt=""></div>` : r.icon ? `<div class="head" style="font-size:1.7vh">${esc(r.icon)}</div>` : head(r.name, r.uuid)}<span class="nm">${esc(r.name)}${online.has(r.name) ? ' <span class="ok" title="online">●</span>' : ""}</span>
+    <span class="bar"><i style="width:${100 * r.value / max}%"></i></span>
+    <span class="num">${num(r.value, b.dec)}${b.unit ? (b.unit === "♥" ? " ♥" : " " + b.unit) : ""}</span></div>`).join("");
+}
+// Facts: every fifth one is a Cave Dweller fact, shown in red.
+let factStep = 0, caveIdx = 0, curFact = null;
+function renderFact(advance) {
+  const all = (D && D.facts) || [];
+  const F = all.filter(f => f.kind !== "cave"), C = all.filter(f => f.kind === "cave");
+  if (!all.length) { $("fact").textContent = ""; return; }
+  if (advance || !curFact) {
+    factStep++;
+    if (C.length && (factStep % 5 === 0 || !F.length)) curFact = C[caveIdx++ % C.length];
+    else curFact = F[factIdx++ % Math.max(1, F.length)];
+  } else {
+    curFact = all.find(f => f.text === curFact.text) || curFact;   // keep showing it, with fresh numbers if it changed
+  }
+  const el = $("fact"), card = $("factcard"), cave = curFact.kind === "cave";
+  card.classList.toggle("cave", cave);
+  $("fact-title").textContent = cave ? "👁️ Cave Dweller" : "Did you know?";
+  if (advance) { el.classList.remove("fade"); void el.offsetWidth; el.classList.add("fade"); }
+  el.innerHTML = md(curFact.text);
+}
+
+// Bottom-middle card cycles between the 14-day chart and the time-of-day chart.
+let cycleIdx = 0;
+function renderCycle(advance) {
+  if (!D) return;
+  if (advance) cycleIdx = (cycleIdx + 1) % 2;
+  const H = D.history || {}, today = D.today || {};
+  $("cycle-dots").innerHTML = [0, 1].map(i => `<i class="${i === cycleIdx ? "on" : ""}"></i>`).join("");
+  const body = $("c-cycle");
+  if (advance) { body.classList.remove("fade"); void body.offsetWidth; body.classList.add("fade"); }
+  if (cycleIdx === 0) {
+    const days = H.days || [];
+    $("cycle-title").textContent = "Last 14 days";
+    $("cycle-sub").innerHTML = `${num(today.hours || 0, 1)} h <small>played today</small>`;
+    barChart(body, days.map(d => d.hours), days.map((d, i) => {
+      const dd = new Date(d.date + "T12:00");
+      return i === days.length - 1 ? "Today" : ((days.length - 1 - i) % 2 ? "" : dd.toLocaleDateString([], {weekday: "short"}));
+    }), {yfmt: v => num(v, v < 10 && v % 1 ? 1 : 0) + "h", highlight: days.length - 1, valueLabels: true, minMax: 2});
+  } else {
+    $("cycle-title").textContent = "When everyone plays";
+    $("cycle-sub").innerHTML = `<small>play-hours by time of day, last 14 days</small>`;
+    barChart(body, H.by_hour || [], (H.by_hour || []).map((_, i) => i % 3 === 0 ? (i === 0 ? "12a" : i < 12 ? i + "a" : i === 12 ? "12p" : (i - 12) + "p") : ""), {
+      yfmt: v => num(v) + "h", highlight: new Date().getHours(), minMax: 2,
+    });
+  }
+}
+
+function renderScore() {
+  const c = D.cave_score;
+  $("score").style.display = c ? "grid" : "none";
+  if (!c) return;
+  $("sc-p").textContent = num(c.players);
+  $("sc-d").textContent = num(c.dweller);
+  $("sc-p").className = "n " + (c.players > c.dweller ? "win" : c.players < c.dweller ? "lose" : "");
+  $("sc-d").className = "n " + (c.dweller > c.players ? "win" : c.dweller < c.players ? "lose" : "");
+  const bits = [];
+  if (c.top_slayer) bits.push(`Top slayer <b>${esc(c.top_slayer)}</b> (${c.top_slayer_n})`);
+  bits.push(c.last_killed ? `last killed <b>${num(minsSince(c.last_killed))}</b> min ago` : "last killed: not tracked yet");
+  $("sc-foot").innerHTML = bits.join(" · ");
+}
+
+let lastChatT = 0;
+function renderChat() {
+  const el = $("chat");
+  if (D.show_chat === false) { el.innerHTML = `<div class="empty">Chat is turned off in dashboard.py</div>`; return; }
+  const C = D.chat || [];
+  const uuids = Object.fromEntries((D.roster || []).map(r => [r.name, r.uuid]));
+  const sameDay = t => new Date(t * 1000).toDateString() === new Date().toDateString();
+  const line = m => {
+    const n = m.name ? nameHtml(m.name) : "";
+    switch (m.kind) {
+      case "chat": return `&lt;${n}&gt; ${esc(m.text)}`;
+      case "emote": return `* ${n} ${esc(m.text)}`;
+      case "adv": {
+        const mm = /^(.*?) \[(.*)\]$/.exec(m.text) || [null, m.text, ""];
+        return `${n} has ${esc(mm[1])} ${advSpan(mm[2], m.desc, m.challenge)}`;
+      }
+      case "joined": case "left": case "death": case "grave": return `${n} ${esc(m.text)}`;
+      default: return esc(m.text);
+    }
+  };
+  el.innerHTML = C.length ? C.map(m => {
+    const t = new Date(m.t * 1000);
+    const tl = t.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", hourCycle: "h23"});
+    const td = t.toLocaleDateString([], {weekday: "short", year: "numeric", month: "short", day: "numeric"});
+    const hd = m.name ? head(m.name, uuids[m.name]) : `<span class="nohead"></span>`;
+    return `<div class="msg k-${m.kind} ${lastChatT && m.t > lastChatT ? "new" : ""}"><span class="t" title="${esc(td)}">${tl}</span>${hd}<div class="txt">${line(m)}</div></div>`;
+  }).join("") : `<div class="empty">No chat yet</div>`;
+  const newest = C.length ? C[C.length - 1].t : 0;
+  $("chat-sub").textContent = newest ? `last activity ${ago(newest)}` : "live";
+  lastChatT = newest;
+}
+
+// On GitHub Pages (the copy friends see) the numbers come from status.json, which bork-mini uploads every 5 min
+const PUBLIC = location.hostname.endsWith("github.io");
+const API = PUBLIC ? "https://raw.githubusercontent.com/dodgerPNG/bluigi-mc-stats/data/status.json" : "/api/status";
+async function poll() {
+  try {
+    const r = await fetch(PUBLIC ? `${API}?t=${Date.now()}` : API, {cache: "no-store"});
+    D = await r.json();
+    lastOk = Date.now();
+    render();
+  } catch (e) { /* keep showing the last data */ }
+  if (PUBLIC) {
+    const age = D ? Date.now() / 1000 - D.now : 1e9;
+    $("stale").textContent = !D ? "Couldn't load the stats" : `These stats are from ${ago(D.now)}. The live feed is paused.`;
+    $("stale").style.display = age > 900 ? "block" : "none";
+  } else {
+    $("stale").style.display = Date.now() - lastOk > 20000 ? "block" : "none";
+  }
+}
+function tickClock() {
+  const n = new Date();
+  $("clock").textContent = n.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
+}
+factIdx = Math.floor(Math.random() * 50);
+poll(); tickClock();
+setInterval(poll, PUBLIC ? 60000 : 5000);
+setInterval(tickClock, 1000);
+let boardTimer = setInterval(() => renderBoard(true), 10000);
+function boardStep(dir) {
+  const n = ((D && D.boards) || []).length || 1;
+  boardIdx = (boardIdx + dir - 1 + n) % n;   // renderBoard(true) adds one
+  renderBoard(true);
+  clearInterval(boardTimer);                  // give the clicked board a full 10 s
+  boardTimer = setInterval(() => renderBoard(true), 10000);
+}
+$("prev").onclick = () => boardStep(-1);
+$("next").onclick = () => boardStep(1);
+setInterval(() => renderFact(true), 13000);
+let cycleTimer = setInterval(() => renderCycle(true), 15000);
+$("cycle-title").onclick = () => { renderCycle(true); clearInterval(cycleTimer); cycleTimer = setInterval(() => renderCycle(true), 15000); };
+window.addEventListener("resize", render);
+</script>
+</body>
+</html>

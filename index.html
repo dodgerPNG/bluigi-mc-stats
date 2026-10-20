@@ -80,7 +80,7 @@ header h1 span { color: var(--accent-text); }
 .tile .value small { font-size: 1rem; color: var(--text-2); font-weight: 500; }
 .tile .sub { color: var(--muted); font-size: .85rem; margin-top: .3vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .meter { height: 6px; background: var(--grid); border-radius: 3px; margin-top: .8vh; overflow: hidden; }
-.meter i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s; }
+.meter i { display: block; height: 100%; background: var(--meter, var(--accent)); border-radius: 3px; transition: width .6s; }
 .ok { color: var(--good); } .warn { color: var(--warn); } .bad { color: var(--bad); }
 
 /* main */
@@ -141,7 +141,7 @@ svg .val { fill: var(--text); font-weight: 600; }
 .row .head { width: 2.4vh; height: 2.4vh; border-radius: 3px; font-size: .6rem; }
 .row .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row .bar { height: 10px; background: var(--grid); border-radius: 0 4px 4px 0; overflow: hidden; }
-.row .bar i { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; transition: width .8s; }
+.row .bar i { display: block; height: 100%; background: var(--bar, var(--accent)); border-radius: 0 4px 4px 0; transition: width .8s; }
 .row:first-child .nm { font-weight: 700; }
 .row .num { font-variant-numeric: tabular-nums; text-align: right; min-width: 4.5em; }
 .fade { animation: fade .6s; }
@@ -409,13 +409,16 @@ const THEMES = [
     "--good": "#89f336", "--warn": "#f3c736", "--bad": "#ff5a5a", "--sleep": "#adebb3", "--cave-bg": "#4a2a30", ...DARK_MC}},
   {name: "Electropop", vars: {"--bg": "#080a12", "--surface": "#10141f", "--surface-2": "#171d2d", "--border": "#243049", "--grid": "#1c2436",
     "--text": "#effcff", "--text-2": "#a9c6d3", "--muted": "#6f8999", "--accent": "#00f0ff", "--accent-text": "#00f0ff",
+    "--chart-a": "#00ff81", "--chart-b": "#ffa900", "--chart-c": "#ff6800", "--chart-d": "#ffa900", "--bar": "#00ff81", "--meter": "#ff6800",
     "--good": "#00ff81", "--warn": "#ffa900", "--bad": "#ff6800", "--sleep": "#7aa8ff", "--cave-bg": "#2b1606", ...DARK_MC}},
-  {name: "Cool Blues", vars: {"--bg": "#06111d", "--surface": "#0b1b2d", "--surface-2": "#11263d", "--border": "#1c3956", "--grid": "#152e47",
-    "--text": "#e8f8ff", "--text-2": "#9fc4d9", "--muted": "#6a8ea6", "--accent": "#00aeff", "--accent-text": "#00ffff",
-    "--good": "#00ff52", "--warn": "#00de94", "--bad": "#ff5d73", "--sleep": "#00ffff", "--cave-bg": "#2a1222", ...DARK_MC}},
-  {name: "Breakfast Tea", vars: {"--bg": "#1f1206", "--surface": "#331c08", "--surface-2": "#432a14", "--border": "#664c36", "--grid": "#4a331f",
-    "--text": "#fff2e4", "--text-2": "#ccbeb1", "--muted": "#a08f80", "--accent": "#ffd3ac", "--accent-text": "#ffd3ac",
-    "--good": "#a3c77f", "--warn": "#f0b45a", "--bad": "#e8735a", "--sleep": "#ccbeb1", "--cave-bg": "#4a1c10", ...DARK_MC}},
+  {name: "Cool Blues", light: true, vars: {"--bg": "#e4f8ff", "--surface": "#ffffff", "--surface-2": "#e9fbff", "--border": "#b4e6f7", "--grid": "#d3f1fb",
+    "--text": "#06304a", "--text-2": "#2c5a76", "--muted": "#5f88a0", "--accent": "#00aeff", "--accent-text": "#0083c7",
+    "--chart-a": "#00aeff", "--chart-b": "#00de94", "--chart-c": "#00aeff", "--chart-d": "#00de94", "--bar": "#00c8ff", "--meter": "#00de94",
+    "--good": "#00b84a", "--warn": "#d18a00", "--bad": "#e0435c", "--sleep": "#00aeff", "--cave-bg": "#fde3ea", ...LIGHT_MC}},
+  {name: "Breakfast Tea", light: true, vars: {"--bg": "#fdf0e3", "--surface": "#fffaf4", "--surface-2": "#ffe9d6", "--border": "#e3d2c2", "--grid": "#f1e3d6",
+    "--text": "#331c08", "--text-2": "#664c36", "--muted": "#8f7a68", "--accent": "#ffd3ac", "--accent-text": "#664c36",
+    "--chart-a": "#664c36", "--chart-b": "#664c36", "--chart-c": "#ccbeb1", "--chart-d": "#ccbeb1", "--bar": "#664c36", "--meter": "#664c36",
+    "--good": "#6d8f4a", "--warn": "#c27a2c", "--bad": "#b5482e", "--sleep": "#8a7360", "--cave-bg": "#f8dccf", ...LIGHT_MC}},
   {name: "Honeycomb", light: true, vars: {"--bg": "#fdf5cc", "--surface": "#fffdd0", "--surface-2": "#f9ecb0", "--border": "#ead27c", "--grid": "#f3e3a0",
     "--text": "#3b230f", "--text-2": "#6e4a25", "--muted": "#97764a", "--accent": "#ffc107", "--accent-text": "#895129",
     "--good": "#5f9a2b", "--warn": "#d18a00", "--bad": "#c8442c", "--sleep": "#895129", "--cave-bg": "#fbdcc8", ...LIGHT_MC}},
@@ -428,6 +431,8 @@ function applyTheme() {
   const r = document.documentElement;
   for (const [k, v] of Object.entries(THEME.vars)) r.style.setProperty(k, v);
   r.style.setProperty("--accent-dim", THEME.vars["--accent"] + "33");
+  for (const k of ["--chart-a", "--chart-b", "--chart-c", "--chart-d", "--bar", "--meter"])   // per-part colors, accent unless the theme says
+    r.style.setProperty(k, THEME.vars[k] || THEME.vars["--accent"]);
   if (THEME.light) r.setAttribute("data-light", ""); else r.removeAttribute("data-light");
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME.vars["--bg"]);
 }
@@ -519,10 +524,11 @@ function lineChart(el, pts, o) {
       if (o.step && i) d += `H${x}V${y}`; else d += (i ? "L" : "M") + x + "," + y;
     });
     const base = h - pad.b;
-    g += `<path d="${d}V${base}H${X(pts[0][0]).toFixed(1)}Z" fill="var(--accent-dim)" stroke="none"/>`;
-    g += `<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+    const c = o.color || "var(--accent)";
+    g += `<path d="${d}V${base}H${X(pts[0][0]).toFixed(1)}Z" fill="color-mix(in srgb, ${c} 22%, transparent)" stroke="none"/>`;
+    g += `<path d="${d}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`;
     const last = pts[pts.length - 1];
-    g += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+    g += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4" fill="${o.color || "var(--accent)"}" stroke="var(--surface)" stroke-width="2"/>`;
   } else {
     g += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" class="lbl">${o.emptyText || "Waiting for data…"}</text>`;
   }
@@ -536,7 +542,7 @@ function barChart(el, vals, labels, o) {
   vals.forEach((v, i) => {
     const bh = (h - pad.t - pad.b) * v / max, x = pad.l + i * slot + (slot - bw) / 2, y = h - pad.b - bh;
     const hl = o.highlight === i;
-    if (v > 0) g += `<path d="M${x},${h - pad.b}V${y + Math.min(4, bh)}q0,-4 4,-4h${bw - 8}q4,0 4,4V${h - pad.b}Z" fill="var(--accent)" opacity="${hl ? 1 : .75}"/>`;
+    if (v > 0) g += `<path d="M${x},${h - pad.b}V${y + Math.min(4, bh)}q0,-4 4,-4h${bw - 8}q4,0 4,4V${h - pad.b}Z" fill="${o.color || "var(--accent)"}" opacity="${hl ? 1 : .75}"/>`;
     if (labels[i]) g += `<text x="${x + bw / 2}" y="${h - 4}" text-anchor="middle" class="${hl ? "val" : ""}">${labels[i]}</text>`;
     if (o.valueLabels && v > 0 && (hl || v === Math.max(...vals))) g += `<text x="${x + bw / 2}" y="${y - 3}" text-anchor="middle" class="val">${o.yfmt(v)}</text>`;
   });
@@ -616,7 +622,7 @@ function render() {
   const mh = D.mspt_hist || [];
   $("mspt-now").innerHTML = s.mspt != null && st === "online" ? `${num(s.mspt, 1)} ms <small>(under 50 is smooth)</small>` : `<small>${st === "sleeping" ? "paused while empty" : ""}</small>`;
   lineChart($("c-mspt"), mh.map(p => [p[0], p[1]]), {
-    t0: D.now - 3600, t1: D.now, minMax: 20, target: 50, targetLabel: "50 ms = lag",
+    t0: D.now - 3600, t1: D.now, minMax: 20, color: "var(--chart-a)", target: 50, targetLabel: "50 ms = lag",
     yfmt: v => num(v) + "ms", xlabels: [[0, "60 min ago"], [.5, "30"], [1, "now"]],
     emptyText: st === "sleeping" ? "Paused while nobody's on" : "Collecting… (fills in as the dashboard runs)",
   });
@@ -624,7 +630,7 @@ function render() {
   const o24 = H.online24 || [];
   $("peak").innerHTML = H.peak ? `<span title="Most players online at once${H.peak_t ? ", " + new Date(H.peak_t * 1000).toLocaleDateString([], {month: "short", day: "numeric"}) : ""}">${fa("crown", "fa-gold")} ${H.peak}</span>` : "";
   lineChart($("c-24"), o24, {
-    t0: D.now - 86400, t1: D.now, minMax: 4, step: true, yfmt: v => num(v),
+    t0: D.now - 86400, t1: D.now, minMax: 4, step: true, color: "var(--chart-b)", yfmt: v => num(v),
     xlabels: [[0, "24 h ago"], [.25, "18"], [.5, "12"], [.75, "6"], [1, "now"]],
   });
 
@@ -718,12 +724,12 @@ function renderCycle(advance) {
     barChart(body, days.map(d => d.hours), days.map((d, i) => {
       const dd = new Date(d.date + "T12:00");
       return i === days.length - 1 ? "Today" : ((days.length - 1 - i) % 2 ? "" : dd.toLocaleDateString([], {weekday: "short"}));
-    }), {yfmt: v => num(v, v < 10 && v % 1 ? 1 : 0) + "h", highlight: days.length - 1, valueLabels: true, minMax: 2});
+    }), {yfmt: v => num(v, v < 10 && v % 1 ? 1 : 0) + "h", highlight: days.length - 1, valueLabels: true, minMax: 2, color: "var(--chart-c)"});
   } else {
     $("cycle-title").textContent = "When everyone plays";
     $("cycle-sub").innerHTML = `<small>play-hours by time of day, last 14 days</small>`;
     barChart(body, H.by_hour || [], (H.by_hour || []).map((_, i) => i % 3 === 0 ? (i === 0 ? "12a" : i < 12 ? i + "a" : i === 12 ? "12p" : (i - 12) + "p") : ""), {
-      yfmt: v => num(v) + "h", highlight: new Date().getHours(), minMax: 2,
+      yfmt: v => num(v) + "h", highlight: new Date().getHours(), minMax: 2, color: "var(--chart-d)",
     });
   }
 }

@@ -556,7 +556,7 @@ function render() {
   });
 
   const o24 = H.online24 || [];
-  $("peak").innerHTML = H.peak ? `record ${H.peak} <small>at once, ${H.peak_t ? new Date(H.peak_t * 1000).toLocaleDateString([], {month: "short", day: "numeric"}) : ""}</small>` : "";
+  $("peak").innerHTML = H.peak ? `<span title="Most players online at once${H.peak_t ? ", " + new Date(H.peak_t * 1000).toLocaleDateString([], {month: "short", day: "numeric"}) : ""}">${fa("crown", "fa-gold")} ${H.peak}</span>` : "";
   lineChart($("c-24"), o24, {
     t0: D.now - 86400, t1: D.now, minMax: 4, step: true, yfmt: v => num(v),
     xlabels: [[0, "24 h ago"], [.25, "18"], [.5, "12"], [.75, "6"], [1, "now"]],

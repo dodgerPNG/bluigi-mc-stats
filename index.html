@@ -42,6 +42,8 @@ h2 { font-size: 1.05rem; margin: 0 0 .7vh; color: var(--text-2); font-weight: 50
 header { display: flex; align-items: center; gap: 1.5vw; }
 header h1 { font-size: 2.3rem; margin: 0; line-height: 1; }
 header h1 span { color: var(--accent); }
+.brand { display: flex; align-items: center; gap: .9vw; }
+.srv-icon { width: 3.7rem; height: 3.7rem; border-radius: 8px; image-rendering: pixelated; flex: none; }
 .motd { color: var(--text-2); font-size: 1rem; margin-top: .4vh; }
 .pill { display: inline-flex; align-items: center; gap: .5em; padding: .45em 1em; border-radius: 999px; font-weight: 600; font-size: 1.1rem; border: 1px solid; }
 .pill .dot { width: .7em; height: .7em; border-radius: 50%; background: currentColor; }
@@ -199,6 +201,8 @@ footer b { color: var(--text-2); font-weight: 500; }
   header { flex-wrap: wrap; gap: 10px 12px; }
   header > div:first-child { flex: 1 1 100%; }
   header h1 { font-size: 1.9rem; }
+  .brand { gap: 12px; }
+  .srv-icon { width: 3.4rem; height: 3.4rem; }
   .spacer { display: none; }
   .pill { font-size: .95rem; }
   .clock { margin-left: auto; }
@@ -232,9 +236,12 @@ footer b { color: var(--text-2); font-weight: 500; }
 <body>
 <div class="app">
   <header>
-    <div>
-      <h1>spooky<span>-</span>bloogui</h1>
-      <div class="motd" id="motd"></div>
+    <div class="brand">
+      <img class="srv-icon" src="icons/server.png" alt="" onerror="this.remove()">
+      <div>
+        <h1>spooky<span>-</span>bloogui</h1>
+        <div class="motd" id="motd"></div>
+      </div>
     </div>
     <div class="pill offline" id="pill"><span class="dot"></span><span id="pilltext">Connecting…</span></div>
     <div class="cave-alert" id="cave-alert">👁️ The Cave Dweller is out</div>

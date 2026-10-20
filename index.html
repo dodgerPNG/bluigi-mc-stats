@@ -158,7 +158,9 @@ svg .val { fill: var(--text); font-weight: 600; }
 .board-title .mid { display: flex; flex-direction: column; align-items: center; gap: .5vh; flex: 1; }
 
 /* chat */
-.chat { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: .5vh; overflow: hidden; }
+.chat { position: absolute; inset: 0; display: flex; flex-direction: column; gap: .5vh; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent; padding-right: 4px; }
+.chat > :first-child { margin-top: auto; }   /* few lines: sit at the bottom like game chat */
 .msg { flex-shrink: 0; display: grid; grid-template-columns: 3.2em 22px 1fr; gap: .5vw; align-items: start; font-size: .95rem; }
 .msg .head { width: 22px; height: 22px; border-radius: 4px; font-size: .6rem; margin-top: .1em; }
 .msg .nohead { width: 22px; }
@@ -680,7 +682,9 @@ let lastChatT = 0;
 function renderChat() {
   const el = $("chat");
   if (D.show_chat === false) { el.innerHTML = `<div class="empty">Chat is turned off in dashboard.py</div>`; return; }
-  const C = D.chat || [];
+  const C = (D.chat || []).slice(-30);
+  const fromBottom = el.scrollHeight - el.scrollTop;   // keep the reader's place, or follow the newest line
+  const atBottom = fromBottom - el.clientHeight < 40;
   const uuids = Object.fromEntries((D.roster || []).map(r => [r.name, r.uuid]));
   const sameDay = t => new Date(t * 1000).toDateString() === new Date().toDateString();
   const line = m => {
@@ -703,6 +707,7 @@ function renderChat() {
     const hd = m.name ? head(m.name, uuids[m.name]) : `<span class="nohead"></span>`;
     return `<div class="msg k-${m.kind} ${lastChatT && m.t > lastChatT ? "new" : ""}"><span class="t" title="${esc(td)}">${tl}</span>${hd}<div class="txt">${line(m)}</div></div>`;
   }).join("") : `<div class="empty">No chat yet</div>`;
+  el.scrollTop = atBottom ? el.scrollHeight : el.scrollHeight - fromBottom;
   const newest = C.length ? C[C.length - 1].t : 0;
   $("chat-sub").textContent = newest ? `last activity ${ago(newest)}` : "live";
   lastChatT = newest;

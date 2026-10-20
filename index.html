@@ -344,7 +344,15 @@ const fa = (name, cls = "") => {
 document.querySelectorAll(".ico-eye").forEach(e => e.outerHTML = fa("eye"));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const minsSince = ts => Math.max(0, Math.floor((Date.now() / 1000 - ts) / 60));
-const md = s => esc(s).replace(/\{\{min:(\d+)\}\}/g, (_, ts) => num(minsSince(+ts)))   // live minute counters
+// "42 minutes", then "3 h 20 min" after an hour, then "2 days 3 h" after two days
+function sinceText(ts) {
+  const m = minsSince(ts);
+  if (m < 60) return `${num(m)} minute${m === 1 ? "" : "s"}`;
+  const h = Math.floor(m / 60);
+  if (h < 48) return `${h} h${m % 60 ? ` ${m % 60} min` : ""}`;
+  return `${num(Math.floor(h / 24))} days${h % 24 ? ` ${h % 24} h` : ""}`;
+}
+const md = s => esc(s).replace(/\{\{min:(\d+)\}\}(?: minutes)?/g, (_, ts) => sinceText(+ts))   // live counters
   .replace(/\{\{?fa:([a-z-]+)(?::([a-z-]+))?\}\}?/g, (_, n, c) => fa(n, c ? "fa-" + c : ""))
   .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 const num = (n, d = 0) => Number(n).toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
@@ -664,7 +672,7 @@ function renderScore() {
   $("sc-d").className = "n " + (c.dweller > c.players ? "win" : c.dweller < c.players ? "lose" : "");
   const bits = [];
   if (c.top_slayer) bits.push(`Top slayer <b>${esc(c.top_slayer)}</b> (${c.top_slayer_n})`);
-  bits.push(c.last_killed ? `last killed <b>${num(minsSince(c.last_killed))}</b> min ago` : "last killed: not tracked yet");
+  bits.push(c.last_killed ? `last killed <b>${sinceText(c.last_killed).replace(/ minutes?$/, " min")}</b> ago` : "last killed: not tracked yet");
   $("sc-foot").innerHTML = bits.join(" · ");
 }
 

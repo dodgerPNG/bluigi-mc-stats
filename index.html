@@ -181,6 +181,7 @@ svg .val { fill: var(--text); font-weight: 600; }
 /* cycling card */
 .cycle-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1vw; }
 .cycle-head h2 { cursor: pointer; flex: 1; }
+#fact-title { cursor: pointer; user-select: none; }
 .cave-alert { display: none; color: var(--bad); border: 1px solid #f2676b88; background: #f2676b1a; padding: .45em 1em; border-radius: 999px; font-weight: 600; animation: pulse 1.6s infinite; }
 
 .feed { display: grid; gap: .55vh; font-size: .92rem; overflow: hidden; }
@@ -291,7 +292,7 @@ footer b { color: var(--text-2); font-weight: 500; }
         <div class="board-title"><button class="nav" id="prev" title="Previous">‹</button><div class="mid"><span class="pixel" id="board-title">Leaderboard</span><span class="dots" id="dots"></span></div><button class="nav" id="next" title="Next">›</button></div>
         <div class="body"><div class="rows" id="rows"></div></div>
       </div>
-      <div class="card factcard" id="factcard"><h2 id="fact-title">Did you know?</h2><div class="fact" id="fact"></div></div>
+      <div class="card factcard" id="factcard"><h2 id="fact-title" title="Next fact">Did you know?</h2><div class="fact" id="fact"></div></div>
       <div class="card flex"><div class="chart-head"><h2>Chat</h2><span class="now"><small id="chat-sub">live</small></span></div><div class="body"><div class="chat" id="chat"></div></div></div>
     </div>
   </main>
@@ -693,7 +694,8 @@ function boardStep(dir) {
 }
 $("prev").onclick = () => boardStep(-1);
 $("next").onclick = () => boardStep(1);
-setInterval(() => renderFact(true), 13000);
+let factTimer = setInterval(() => renderFact(true), 13000);
+$("fact-title").onclick = () => { renderFact(true); clearInterval(factTimer); factTimer = setInterval(() => renderFact(true), 13000); };
 let cycleTimer = setInterval(() => renderCycle(true), 15000);
 $("cycle-title").onclick = () => { renderCycle(true); clearInterval(cycleTimer); cycleTimer = setInterval(() => renderCycle(true), 15000); };
 window.addEventListener("resize", render);

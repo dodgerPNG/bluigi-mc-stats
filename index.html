@@ -107,6 +107,10 @@ main { display: grid; grid-template-columns: 1fr 1.25fr 1.15fr; gap: 1vw; min-he
 .player .meta { color: var(--text-2); font-size: .85rem; display: flex; gap: .9em; flex-wrap: wrap; margin-top: .2vh; }
 .player .right { text-align: right; color: var(--text-2); font-size: .85rem; }
 .player .right b { display: block; color: var(--text); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+/* status effects: outline in the (first) effect's potion color, names in their own colors */
+.player.fx { box-shadow: inset 0 0 0 2px var(--fx), 0 0 10px color-mix(in srgb, var(--fx) 35%, transparent); }
+.player .effects { display: flex; flex-direction: column; align-items: flex-end; gap: .1em; margin-bottom: .3em; font-weight: 600; font-size: .85rem; line-height: 1.2; }
+.player .effects .more { color: var(--muted); font-weight: 500; font-size: .78rem; }
 .fa { width: 1em; height: 1em; fill: currentColor; vertical-align: -.125em; }
 .fa-hp { color: #ff5f6d; } .fa-food { color: #e8a25c; } .fa-xp { color: #f5d75a; }
 .fa-sun { color: #ffcf4a; } .fa-moon { color: #c9cff5; } .fa-rain { color: #7fb2ff; } .fa-storm { color: #b49cff; }
@@ -451,6 +455,33 @@ function applyTheme() {
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME.vars["--bg"]);
 }
 applyTheme();
+// Status effect colors: the game's own potion colors (1.21). Modded effects fall back to the accent.
+const EFFECT_COLORS = {speed: "#33ebff", slowness: "#8bafe0", haste: "#d9c043", mining_fatigue: "#4a4217", strength: "#ffc700",
+  instant_health: "#f82423", instant_damage: "#a9656a", jump_boost: "#fdff84", nausea: "#551d4a", regeneration: "#cd5cab",
+  resistance: "#9146f0", fire_resistance: "#ff9900", water_breathing: "#98dac0", invisibility: "#f6f6f6", blindness: "#1f1f23",
+  night_vision: "#c2ff66", hunger: "#587653", weakness: "#484d48", poison: "#87a363", wither: "#736156", health_boost: "#f87d23",
+  absorption: "#2552a5", saturation: "#f82423", glowing: "#94a061", levitation: "#ceffff", luck: "#59c106", unluck: "#c0a44d",
+  slow_falling: "#f3cfb9", conduit_power: "#1dc2d1", dolphins_grace: "#88a3be", bad_omen: "#0b6138", hero_of_the_village: "#44ff44",
+  darkness: "#292721", trial_omen: "#16a6a6", raid_omen: "#de4058", wind_charged: "#bdc9ff", weaving: "#78695a", oozing: "#99ffa3",
+  infested: "#8c9b8c"};
+const EFFECT_NAMES = {unluck: "Bad Luck", instant_damage: "Instant Damage", jump_boost: "Jump Boost", hero_of_the_village: "Hero of the Village",
+  dolphins_grace: "Dolphin's Grace"};
+const ROMAN = ["", "", " II", " III", " IV", " V"];
+function fxColor(id) {
+  const c = EFFECT_COLORS[id.split(":").pop()];
+  if (!c) return "var(--accent-text)";
+  // very dark (or very light) potion colors get pulled toward the text color so they stay visible on this theme
+  return contrast(c, THEME.vars["--surface"]) < 2.2 ? `color-mix(in srgb, ${c} 45%, var(--text))` : c;
+}
+function fxName(e) {
+  const k = e.id.split(":").pop();
+  const n = EFFECT_NAMES[k] || k.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  return n + (e.amp > 0 ? (ROMAN[e.amp + 1] || " " + (e.amp + 1)) : "");
+}
+function fxTitle(e) {
+  if (e.secs == null) return fxName(e) + " · no time limit";
+  return `${fxName(e)} · ${Math.floor(e.secs / 60)}:${String(e.secs % 60).padStart(2, "0")} left`;
+}
 // Minecraft's chat colors, for players' /color choices
 const MC = {black: "#000000", dark_blue: "#0000aa", dark_green: "#00aa00", dark_aqua: "#00aaaa", dark_red: "#aa0000",
   dark_purple: "#aa00aa", gold: "#ffaa00", gray: "#aaaaaa", dark_gray: "#555555", blue: "#5555ff", green: "#55ff55",
@@ -616,9 +647,12 @@ function render() {
     $("players").innerHTML = P.map(p => {
       const hp = p.health != null ? `${fa("heart", "fa-hp")} ${num(p.health / 2, 1)}` : "", food = p.food != null ? `${fa("utensils", "fa-food")} ${num(p.food / 2, 1)}` : "";
       const lv = p.level != null ? `${fa("star", "fa-xp")} Lv ${num(p.level)}` : "";
-      return `<div class="player">${head(p.name, p.uuid)}
+      const fx = p.effects || [];
+      const fxNames = fx.slice(0, 2).map(e => `<span style="color:${fxColor(e.id)}" title="${esc(fxTitle(e))}">${esc(fxName(e))}</span>`).join("")
+        + (fx.length > 2 ? `<span class="more" title="${esc(fx.slice(2).map(fxTitle).join("\n"))}">+${fx.length - 2} more</span>` : "");
+      return `<div class="player${fx.length ? " fx" : ""}"${fx.length ? ` style="--fx:${fxColor(fx[0].id)}"` : ""}>${head(p.name, p.uuid)}
         <div><div class="name">${esc(p.name)}</div><div class="meta">${dimLabel(p.dim)}<span>${hp}</span><span>${food}</span><span>${lv}</span></div></div>
-        <div class="right">${p.since ? `<b title="this session">${dur(D.now - p.since)}</b>` : ""}</div></div>`;
+        <div class="right">${fx.length ? `<div class="effects">${fxNames}</div>` : ""}${p.since ? `<b title="this session">${dur(D.now - p.since)}</b>` : ""}</div></div>`;
     }).join("");
   } else {
     const ro = (D.roster || []).filter(r => r.last_seen).sort((a, b) => b.last_seen - a.last_seen);

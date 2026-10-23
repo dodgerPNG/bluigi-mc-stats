@@ -179,6 +179,7 @@ svg .val { fill: var(--text); font-weight: 600; }
 .msg.k-start .txt, .msg.k-stop .txt { color: var(--muted); font-style: italic; }
 .msg.k-cave .txt { color: var(--bad); }
 .msg.k-emote .txt { font-style: italic; }
+.msg.k-say .txt { color: var(--muted); }
 .adv { color: var(--mc-green); }
 .adv.challenge { color: var(--mc-purple); }
 .nm { font-weight: 600; }
@@ -810,6 +811,7 @@ function renderChat() {
     switch (m.kind) {
       case "chat": return `&lt;${n}&gt; ${esc(m.text)}`;
       case "emote": return `* ${n} ${esc(m.text)}`;
+      case "say": return `[${m.name ? n : "<b>SERVER</b>"}] <i>${esc(m.text)}</i>`;
       case "adv": {
         const mm = /^(.*?) \[(.*)\]$/.exec(m.text) || [null, m.text, ""];
         return `${n} has ${esc(mm[1])} ${advSpan(mm[2], m.desc, m.challenge)}`;

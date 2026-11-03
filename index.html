@@ -524,7 +524,10 @@ function shortAgo(ts) {
 function head(name, uuid) {
   const ini = esc((name || "?").slice(0, 2));
   if (!uuid) return `<div class="head">${ini}</div>`;
-  return `<div class="head"><img src="https://mc-heads.net/avatar/${esc(uuid)}/64" alt="" onerror="this.parentNode.textContent='${ini}'"></div>`;
+  // Faces the dashboard cut from each player's own Mojang skin; mc-heads.net only as a fallback
+  const own = D && D.heads && D.heads[uuid];
+  const src = own && /^data:image\/png;base64,[A-Za-z0-9+\/=]+$/.test(own) ? own : `https://mc-heads.net/avatar/${esc(uuid)}/64`;
+  return `<div class="head"><img src="${src}" alt="" onerror="this.parentNode.textContent='${ini}'"></div>`;
 }
 const DIMS = {
   "minecraft:overworld": ["Overworld", "#4cc38a"],
